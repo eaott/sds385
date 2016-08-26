@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=red}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}SDS385 HW 1\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+%\date{DATE}
+\setcounter{secnumdepth}{0}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+\section{Linear Regression}
+\subsection{(A)}
+WLS objective function:
+\begin{align*}
+\sum_{i=1}^N\frac{w_i}{2}(y_i-x_i^\top\beta)^2&=\frac{1}{2}\sum_{i=1}^Ny_iw_iy_i - \sum_{i=1}^Ny_iw_ix_i^\top\beta+\frac{1}{2}\sum_{i=1}^Nx_i^\top\beta w_ix_i^\top\beta\\
+&=\frac{1}{2}y^\top W y - y^\top W X \beta + \frac{1}{2}(X\beta)^\top WX\beta\\
+&=\frac{1}{2}(y-X\beta)^\top W(y-X\beta).
+\end{align*}
+Minimizing this function means setting the gradient (with respect to $\beta$) to zero:
+\begin{align*}
+\nabla_\beta\left[\frac{1}{2}(y-X\beta)^\top W(y-X\beta)\right]&=0
+\end{align*}
+That is
+\begin{align*}
+\nabla_\beta\left[\frac{1}{2}(y-X\beta)^\top W(y-X\beta)\right]&=0-(y^\top WX)^\top+\frac{2}{2}X^\top WX\hat{\beta}=0\\
+&\Rightarrow (X^\top WX)\hat{\beta}=X^\top Wy~~~~_\blacksquare
+\end{align*}
+
+\subsection{(B)}
+Maybe something with $LDL^\top$ factorization because it's close to that form already, but $X$ is not lower-triangular.
+
+Main idea here is actually not taking the inverse. It's that there are algorithms for solving $(X^\top WX)\hat{\beta}=X^\top Wy$ for $\hat{\beta}$ by treating this as $Ax=b$ and solving for $x$ (to use the traditional variables for the problem).
+Good reference for using a Cholesky decomposition is at \url{http://www.seas.ucla.edu/~vandenbe/103/lectures/chol.pdf}
+
+
+
+
+\end{document}
