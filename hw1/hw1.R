@@ -26,34 +26,34 @@ my_method = function(X, y, W) {
 }
 
 
-my_check <- function(values) {
-  # In cases where the values should all be near-identical
-  bhat = values[[1]]
-  all(sapply(values[-1], function(x) {sum((x-bhat)^2) < 1e-9}))
-}
+# my_check <- function(values) {
+#   # In cases where the values should all be near-identical
+#   bhat = values[[1]]
+#   all(sapply(values[-1], function(x) {sum((x-bhat)^2) < 1e-9}))
+# }
+# 
+# 
+# N = 2000
+# P = 1000
+# X = matrix(rnorm(N * P), nrow=N)
+# W = diag(nrow=N)
+# y = rnorm(N)
+# # Ensure correctness
+# microbenchmark(inversion_method(X, y, W), smart_inversion_method(X, y, W), my_method(X, y, W), times=1, control=list(order="inorder"), check=my_check)
+# 
+# # Better timing
+# microbenchmark(compare(inversion_method, N, P), compare(smart_inversion_method, N, P), compare(my_method, N, P), times=100)
+# 
+ get_time = function() {
+   return(unname(proc.time()["elapsed"]))
+ }
 
-
-N = 2000
-P = 1000
-X = matrix(rnorm(N * P), nrow=N)
-W = diag(nrow=N)
-y = rnorm(N)
-# Ensure correctness
-microbenchmark(inversion_method(X, y, W), smart_inversion_method(X, y, W), my_method(X, y, W), times=1, control=list(order="inorder"), check=my_check)
-
-# Better timing
-microbenchmark(compare(inversion_method, N, P), compare(smart_inversion_method, N, P), compare(my_method, N, P), times=100)
-
-get_time = function() {
-  return(unname(proc.time()["elapsed"]))
-}
-
-compare = function(method, n, p) {
-  X = matrix(rnorm(N * P), nrow=N)
-  W = diag(nrow=N)
-  y = rnorm(N)
-  return(method(X, y, W))
-}
+# compare = function(method, n, p) {
+#   X = matrix(rnorm(N * P), nrow=N)
+#   W = diag(nrow=N)
+#   y = rnorm(N)
+#   return(method(X, y, W))
+# }
 
 compare_fairly = function(n, p, iter=100) {
   itime = 0
