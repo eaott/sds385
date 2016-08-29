@@ -74,12 +74,21 @@ That is
 \end{align*}
 
 \subsection{(B)}
-The matrix factorization idea basically amounts 
+The matrix factorization idea basically amounts to trying to prevent the full inverse operation. Overall, you will still probably need something $O(n^3)$, but the constants matter when actually doing computation as opposed to asymptotics. We don't actually want the inverse anyway, we just want to solve $(X^\top WX)\hat{\beta}=X^\top Wy$ for $\beta$. Using a matrix
+decomposition can help with that a lot.
 
-Maybe something with $LDL^\top$ factorization because it's close to that form already, but $X$ is not lower-triangular.
+I based my solution on the Cholesky decomposition (see \url{http://www.seas.ucla.edu/~vandenbe/103/lectures/chol.pdf}). This creates matrices $X=LL^\dagger$, where $L$ is lower-triangular. So, then solve $Lz=X^\top Wy$ for $z$ and $R\beta=z$ for $\beta$. The decomposition is still $O(n^3)$,
+but faster than inverse. The two final steps are each $O(n^2)$ which are faster.
 
-Main idea here is actually not taking the inverse. It's that there are algorithms for solving $(X^\top WX)\hat{\beta}=X^\top Wy$ for $\hat{\beta}$ by treating this as $Ax=b$ and solving for $x$ (to use the traditional variables for the problem).
-Good reference for using a Cholesky decomposition is at \url{http://www.seas.ucla.edu/~vandenbe/103/lectures/chol.pdf}
+\subsection{(C)}
+See code on GitHub.
+
+\includegraphics[scale=0.5]{log_methods.png}
+
+\subsection{(D)}
+See code on GitHub.
+
+\includegraphics[scale=0.5]{sparse.png}
 
 \section{Generalized linear models}
 \subsection{(A)}
