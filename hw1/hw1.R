@@ -118,7 +118,7 @@ lm(log(`my method`) ~ log(p), data=results)
 
 
 
-
+# Part (D)
 library(Matrix)
 N = 2000
 P = 1000
@@ -140,10 +140,11 @@ my_method_sparse = function(X, y, W) {
     X$Var2,
     x=X$value,
     dims=myDims)
-  # TODO: update
   # from http://www.seas.ucla.edu/~vandenbe/103/lectures/chol.pdf
-  w = diag(W)
-  A = t(X) %*% (w * X)
+  # Need t(X) %*% W %*% X, so break up into [t(X) %*% t(W^(1/2))] %*% [W^(1/2) %*% X]
+  w = diag(W)^0.5
+  # does t(A) %*% A faster
+  A = crossprod(w * X)
   R = chol(A)
   L = t(R)
   z = forwardsolve(L, t(X) %*% (w * y))

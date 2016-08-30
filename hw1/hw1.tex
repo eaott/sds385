@@ -90,6 +90,26 @@ See code on GitHub.
 
 \includegraphics[scale=0.5]{sparse.png}
 
+\subsection{Notes from class}
+Three main matrix decomposition techniques:
+\begin{enumerate}[1.]
+\item Cholesky $\rightarrow$ fast, unstable (susceptible to roundoff error)
+\item QR $\rightarrow$ middle ground
+\item SVD $\rightarrow$ slow, but works for close-to-rank-deficient matrices
+\end{enumerate}
+
+Using QR, we get $W^{1/2}X=QR$, where $R$ is $P\times P$ and upper-triangular (and thus invertible) and $Q$ is $N\times P$ with
+orthonormal columns.
+\begin{align*}
+X^\top Wy&=X^\top W X\beta\\
+X^\top W^{1/2} W^{1/2}y&=X^\top W^{1/2}W^{1/2}X\beta\\
+(QR)^\top W^{1/2} y&=(QR)^\top QR\beta\\
+Q^\top W^{1/2}y&=I R\beta=R\beta\\
+\end{align*}
+
+A note on R, \texttt{crossprod} computes $X^\top X$ but recognizes the symmetry so it takes half the time.
+
+
 \section{Generalized linear models}
 \subsection{(A)}
 \begin{align*}
