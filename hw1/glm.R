@@ -10,8 +10,6 @@ weight = function(x, b) {
 }
 
 gradL = function(x, b, y, m) {
-  # FIXME something is still wrong here
-  
   # y is Nx1, m is 1x1, weight is Nx1
   # so this will multiply each element into the corresponding
   # row of x
@@ -22,8 +20,6 @@ gradL = function(x, b, y, m) {
 }
 
 logL = function(x, b, y, m) {
-  # FIXME this is also broken, giving -Inf.
-  
   # probably do sum of log pmfs 
   # with dbinom(y, m, weight(x, b))
   return(sum(dbinom(y, m, weight(x, b), log = TRUE)))
