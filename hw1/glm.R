@@ -21,7 +21,7 @@ gradL = function(x, b, y, m) {
   return(-colSums(terms))
 }
 
-logL = function(x, y, b, m) {
+logL = function(x, b, y, m) {
   # FIXME this is also broken, giving -Inf.
   
   # probably do sum of log pmfs 
@@ -46,10 +46,11 @@ for (j in 1:10) {
   for (i in 1:iter) {
     # check for +/-?
     beta = beta - 1e-7 * gradL(X, beta, Y, 1)
-    logLike[i] = logL(X, Y, beta, 1)
+    logLike[i] = logL(X, beta, Y, 1)
   }
   plot(logLike, type="l")
   allYourBeta = cbind(allYourBeta, as.numeric(beta))
 }
+
 
 

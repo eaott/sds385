@@ -211,7 +211,7 @@ ggplot(melted, aes(p, value, col=method)) +
 
 
 
-
+# FIXME add QR factorization?
 
 
 

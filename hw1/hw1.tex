@@ -81,12 +81,12 @@ I based my solution on the Cholesky decomposition (see \url{http://www.seas.ucla
 but faster than inverse. The two final steps are each $O(n^2)$ which are faster.
 
 \subsection{(C)}
-See code on GitHub.
+See code on GitHub (\texttt{hw1.R}).
 
 \includegraphics[scale=0.5]{log_methods.png}
 
 \subsection{(D)}
-See code on GitHub.
+See code on GitHub (\texttt{hw1.R}).
 
 \includegraphics[scale=0.5]{sparse.png}
 
@@ -113,6 +113,7 @@ A note on R, \texttt{crossprod} computes $X^\top X$ but recognizes the symmetry 
 \section{Generalized linear models}
 \subsection{(A)}
 \begin{align*}
+w_i(\beta)&=\frac{1}{1+\exp\{-x_i^\top\beta\}}\\
 l(\beta)&=-\log\left\{\prod_{i=1}^N p(y_i | \beta)\right\}\\
 &=-\log\left\{\prod_{i=1}^N \binom{m_i}{y_i} w_i(\beta)^{y_i} (1-w_i(\beta))^{m_i-y_i}\right\}\\
 &=-\sum_{i=1}^N\log\left\{\binom{m_i}{y_i} w_i(\beta)^{y_i} (1-w_i(\beta))^{m_i-y_i}\right\}\\
@@ -127,5 +128,12 @@ l(\beta)&=-\log\left\{\prod_{i=1}^N p(y_i | \beta)\right\}\\
 &=-\sum_{i=1}^N \left[y_i- m_iw_i(\beta)\right]x_i\\
 \end{align*}
 
+\subsection{(B)}
+See code on GitHub (\texttt{glm.R}).
+
+\subsection{(C)}
+
+\subsection{(D)}
+Newton's direction is $-\left(\nabla^2l(\beta)\right)^{-1}\nabla l(\beta)$.
 
 \end{document}
