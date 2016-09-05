@@ -109,6 +109,34 @@ Q^\top W^{1/2}y&=I R\beta=R\beta\\
 
 A note on R, \texttt{crossprod} computes $X^\top X$ but recognizes the symmetry so it takes half the time.
 
+High level: do \texttt{solve(A, b)} better than $x=A^{-1}b$.
+
+Intermediate level: (where we want to be) factorize $A$ using a decomposition to not do the whole inverse. Especially
+of note is whether we have sparse or dense matrices.
+
+Low level: details of how the factorization works, what pivoting matrix to choose, etc.
+
+Options for sparse matrices:
+\begin{itemize}
+\item Dictionary of keys
+\item List of lists
+\item Coordinate list (row, col, val)
+\item Compressed sparse row format: $A$ stores non-zero elements, $AI$ is row info, $AJ$ is column indexes
+\end{itemize}
+
+\subsubsection{Example to try}
+To see numerical precision, take a look at
+\begin{align*}
+\begin{pmatrix}10^{-5} & 1 \\ 1 & 1\end{pmatrix}
+\begin{pmatrix} x_1\\x_2\end{pmatrix}
+=
+\begin{pmatrix}1\\0\end{pmatrix}
+\end{align*}
+using $LL^\top$ and QR decomposition with intermediate rounding (6 decimal places or so).
+
+In terms of sparse matrix decomposition, try using sparse $LL^\top$ or sparse Cholesky, rather than QR because $Q$ will
+not be sparse by definition, which makes all benefit be lost.
+
 
 \section{Generalized linear models}
 \subsection{(A)}
@@ -126,14 +154,56 @@ l(\beta)&=-\log\left\{\prod_{i=1}^N p(y_i | \beta)\right\}\\
 &=-\sum_{i=1}^N w_i(\beta) \left(\frac{1}{w_i(\beta)} - 1\right)x_i\left(\frac{y_i- m_iw_i(\beta)}{1-w_i(\beta)}\right)\\
 &=-\sum_{i=1}^N w_i(\beta) \frac{1-w_i(\beta)}{w_i(\beta)}x_i\left(\frac{y_i- m_iw_i(\beta)}{1-w_i(\beta)}\right)\\
 &=-\sum_{i=1}^N \left[y_i- m_iw_i(\beta)\right]x_i\\
+&=- X^\top(Y - Mw)
 \end{align*}
+where $M$ is a $N\times N$ diagonal matrix and $w$ is an $N$-vector with $M_{ii}=m_i$ and $w_i = w_i(\beta)$.
 
 \subsection{(B)}
 See code on GitHub (\texttt{glm.R}).
 
 \subsection{(C)}
+The second order Taylor approximation can be seen in Eq (2.14) in Nocedal \& Wright. First, we need the Hessian:
+
+\begin{align*}
+\nabla^2 l(\beta)=\nabla (\nabla l(\beta))&=\nabla_\beta\left(-\sum_{i=1}^N \left[y_i- m_iw_i(\beta)\right]x_i\right)\\
+&=-\sum_{i=1}^N\left(\nabla_\beta\left[y_i- m_iw_i(\beta)\right]x_i\right)\\
+&=-\sum_{i=1}^N\nabla_\beta\left(y_ix_i- m_iw_i(\beta)x_i\right)\\
+&=\sum_{i=1}^Nm_i\nabla_\beta\left(w_i(\beta)x_i\right)\\
+&=\sum_{i=1}^Nm_i\left(w_i(\beta)(1-w_i(\beta))x_i^\top x_i\right)\\
+&=X^\top M W (I-W) X
+\end{align*}
+where $M$ and $W$ are $N\times N$ diagonal matrices with $M_{ii}=m_i$ and $W_{ii}=w_i(\beta)$.
+
+Now, we can start computing the approximation. Let $\left(w_0\right)_i = w_i(\beta_0)$ and $\left(W_0\right)_{ii}=w_i(\beta_0)$, slightly modifying the previous results.
+
+\begin{align*}
+q(\beta; \beta_0)&= l(\beta_0) + (\beta-\beta_0)^\top \nabla_{\beta_0} l(\beta_0) + \frac{1}{2}(\beta-\beta_0)^\top \nabla_{\beta_0}^2 l(\beta_0) (\beta-\beta_0)\\
+&=l(\beta_0) -  (Y - Mw_0)^\top X(\beta-\beta_0)+ \frac{1}{2}(\beta-\beta_0)^\top X^\top M W_0 (I-W_0) X (\beta-\beta_0)\\
+&=l(\beta_0) +  (Y - Mw_0)^\top (X\beta_0-X\beta)+ \frac{1}{2}(X\beta_0-X\beta)^\top  M W_0 (I-W_0) (X\beta_0-X\beta)\\
+A&=M W_0 (I-W_0)\\
+b&=-A^{-1}(Y - Mw_0)\\
+q(\beta; \beta_0)&=\frac{1}{2}(X\beta_0-b-X\beta)^\top A (X\beta_0-b-X\beta) + c(\beta_0)\\
+z&=X\beta_0-b=X\beta_0+\left[M W_0 (I-W_0)\right]^{-1}(Y - Mw_0)\\
+q(\beta; \beta_0)&=\frac{1}{2}(z-X\beta)^\top A (z-X\beta) + c(\beta_0)\\
+\end{align*}
+
+That is, $A$ is an $N\times N$ diagonal matrix and $z$ is an $N$-vector with:
+\begin{align*}
+A_{ii}&=m_i w_i(\beta_0) (1-w_i(\beta_0))\\
+z_i&=x_i^\top\beta_0+\frac{Y_i-m_i w_i(\beta_0)}{m_i w_i(\beta_0) (1-w_i(\beta_0))}
+\end{align*}
+
 
 \subsection{(D)}
-Newton's direction is $-\left(\nabla^2l(\beta)\right)^{-1}\nabla l(\beta)$.
+See code on GitHub.
+
+\subsection{(E)}
+At least in my code, it seems that a couple things are true. First is that each iteration of the Newton's method is slower,
+which makes sense because of the matrix inverse. However, based on my tests, it seems that even with a good multiplier, the steepest direction method doesn't attain as good as a result as the Newton method. Furthermore, the
+steepest direction method took orders of magnitude more iterations to get to a reasonable result. In this case, it seems
+like the Newton method is the way to go. But I'd imagine that with high-$P$, the inverse may be too expensive to perform.
+
+
+
 
 \end{document}

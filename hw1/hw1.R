@@ -197,7 +197,7 @@ compute_fairly_sparse_batch = function(ns, ps, ss, iter=100) {
   return(results)
 }
 
-results = compute_fairly_sparse_batch(c(3200), c(10, 20, 40, 80, 160, 320, 640, 1280), c(0.05), iter = 10)
+results = compute_fairly_sparse_batch(c(1600), c(10, 20, 40, 80, 160, 320), c(0.05), iter = 1)
 results
 names(results) = c("inverse", "smart inverse", "my method", "my sparse method", "n", "p", "s")
 
@@ -206,7 +206,7 @@ names(melted)[4] = "method"
 ggplot(melted, aes(p, value, col=method)) +
   geom_line() + geom_point() + 
   scale_y_log10(breaks=c(0.001, 0.01, 0.1, 1, 10)) + scale_x_log10() + 
-  xlab("p") + ylab("average time (s)") + ggtitle("sparsity=0.05, n=3200")
+  xlab("p") + ylab("average time (s)") + ggtitle("sparsity=0.05, n=1600")
 
 
 
