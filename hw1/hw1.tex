@@ -81,12 +81,12 @@ I based my solution on the Cholesky decomposition (see \url{http://www.seas.ucla
 but faster than inverse. The two final steps are each $O(n^2)$ which are faster.
 
 \subsection{(C)}
-See code on GitHub (\texttt{hw1.R}).
+See code on GitHub (\texttt{matrix\_inverse\_functions.R} and \texttt{matrix\_inverse\_run.R}).
 
 \includegraphics[scale=0.5]{log_methods.png}
 
 \subsection{(D)}
-See code on GitHub (\texttt{hw1.R}).
+See code on GitHub (\texttt{matrix\_inverse\_functions.R} and \texttt{matrix\_inverse\_run.R}, look for the ``Part D'' in each).
 
 \includegraphics[scale=0.5]{sparse.png}
 
@@ -159,7 +159,7 @@ l(\beta)&=-\log\left\{\prod_{i=1}^N p(y_i | \beta)\right\}\\
 where $M$ is a $N\times N$ diagonal matrix and $w$ is an $N$-vector with $M_{ii}=m_i$ and $w_i = w_i(\beta)$.
 
 \subsection{(B)}
-See code on GitHub (\texttt{glm.R}).
+See code on GitHub (\texttt{glm.R} and \texttt{glm\_run.R}).
 
 \subsection{(C)}
 The second order Taylor approximation can be seen in Eq (2.14) in Nocedal \& Wright. First, we need the Hessian:
@@ -195,7 +195,7 @@ z_i&=x_i^\top\beta_0+\frac{Y_i-m_i w_i(\beta_0)}{m_i w_i(\beta_0) (1-w_i(\beta_0
 
 
 \subsection{(D)}
-See code on GitHub.
+See code on GitHub (\texttt{glm.R} and \texttt{glm\_run.R}).
 
 \subsection{(E)}
 At least in my code, it seems that a couple things are true. First is that each iteration of the Newton's method is slower,
