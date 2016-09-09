@@ -203,7 +203,15 @@ which makes sense because of the matrix inverse. However, based on my tests, it 
 steepest direction method took orders of magnitude more iterations to get to a reasonable result. In this case, it seems
 like the Newton method is the way to go. But I'd imagine that with high-$P$, the inverse may be too expensive to perform.
 
+\subsection{Notes from class}
+Peer review likely due September 19.
 
+For this problem, we have three kinds of convergence criteria:
+\begin{enumerate}[1.]
+\item an analytical criterion (for example, $\nabla l(\beta)=0$ known from the problem itself
+\item when a sequence $\beta^{(1)},~\beta^{(2)},~\beta^{(3)},\ldots,\beta^{(n)}$ converges
+\item $l(\beta^{(1)}),~l(\beta^{(2)}),~l(\beta^{(3)}),\ldots,l(\beta^{(n)})$ which is what almost all proofs use. It's the objective function and can be very flat near the optimum so it's better to use than $\beta$ on its own.
+\end{enumerate}
 
 
 \end{document}

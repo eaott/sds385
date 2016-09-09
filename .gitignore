@@ -11,6 +11,8 @@
 *.cb
 *.cb2
 *.DS_Store
+*.RData
+*.Rhistory
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
@@ -178,3 +180,4 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
+.Rproj.user
