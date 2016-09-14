@@ -69,10 +69,9 @@ gradLNewton = function(x, b, y, m) {
   # Returns:
   #   The gradient as a P x 1 vector.
   w = c(weight(x, b))  # Convert to vector instead of matrix
-  hessian = t(x) %*% (m * w * (1-w) * x)
+  # Use the sqrt of the diagonal matrix in order to leverage crossprod
+  hessian = crossprod(sqrt(m * w * (1 - w)) * x)
   gL = as.matrix(gradL(x, b, y, m))
   return(-solve(hessian, gL))  # Shortcut that uses a decomposition
 }
-
-
 

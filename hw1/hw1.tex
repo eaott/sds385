@@ -172,7 +172,7 @@ The second order Taylor approximation can be seen in Eq (2.14) in Nocedal \& Wri
 &=\sum_{i=1}^Nm_i\left(w_i(\beta)(1-w_i(\beta))x_i^\top x_i\right)\\
 &=X^\top M W (I-W) X
 \end{align*}
-where $M$ and $W$ are $N\times N$ diagonal matrices with $M_{ii}=m_i$ and $W_{ii}=w_i(\beta)$.
+where $M$ and $W$ are $N\times N$ diagonal matrices with $M_{ii}=m_i$ and $W_{ii}=w_i(\beta)$. By construction, this matrix will be positive semi-definite, which indicates that the problem itself is convex.
 
 Now, we can start computing the approximation. Let $\left(w_0\right)_i = w_i(\beta_0)$ and $\left(W_0\right)_{ii}=w_i(\beta_0)$, slightly modifying the previous results.
 
@@ -204,7 +204,7 @@ steepest direction method took orders of magnitude more iterations to get to a r
 like the Newton method is the way to go. But I'd imagine that with high-$P$, the inverse may be too expensive to perform.
 
 \subsection{Notes from class}
-Peer review likely due September 19.
+Peer review due September 19.
 
 For this problem, we have three kinds of convergence criteria:
 \begin{enumerate}[1.]
@@ -213,5 +213,7 @@ For this problem, we have three kinds of convergence criteria:
 \item $l(\beta^{(1)}),~l(\beta^{(2)}),~l(\beta^{(3)}),\ldots,l(\beta^{(n)})$ which is what almost all proofs use. It's the objective function and can be very flat near the optimum so it's better to use than $\beta$ on its own.
 \end{enumerate}
 
+Look into \texttt{Rcpp} which basically just uses C++ code within R. In particular, can think about using
+\texttt{Armadillo} or \texttt{Eigen}.
 
 \end{document}
