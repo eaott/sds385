@@ -11,7 +11,7 @@ Y = wdbc[ , 2]
 # Y: replace M with 1 and B with 0.
 Y = as.matrix((Y == "M") * 1)
 
-sgd(X, Y, 1, iter = 40000, step = 0.01, alpha = 0.5 / nrow(X))
+sgd(X, Y, 1, iter = 10000, step = 0.01, alpha = 0.5 / nrow(X))
 
 ########################################
 # Part D still in progress
