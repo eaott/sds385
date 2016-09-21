@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=red}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}HW 3\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+%\date{DATE}
+\setcounter{secnumdepth}{0}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+\section{Line search}
+\subsection{(A)}
+The main idea behind the Wolfe conditions are (irrespective of the method of choosing the direction) to ensure
+that the optimization gets better (sufficient decrease) and stops when it seems like it can't get \emph{much} better
+(curvature). The backtracking approach (especially thinking about fixed-precision values) takes one huge step, and if
+the function being optimized isn't better, it moves along the line between the start and the huge step, closer and closer to the start until it is equivalent to where it was or better. In terms of nice properties, it has the capacity to keep making
+big steps when it's far from the minimum while ensuring that it will always do no worse than it did on the previous iteration.
+
+Why? Since the intermediate step-length decreases exponentially, eventually it will be so close to 0 that in the worst case
+the negative log-likelihood at the new point would be identical to the old value, with essentially a 0 for the ``linear'' adjustment.
+
+The are essentially two routines: \texttt{compute.step.length} and \texttt{line.search}.
+
+\Large{FIXME} add the pseudocode here with an algorithm package.
+
+\subsection{(B)}
+Code is on GitHub. It doesn't particularly seem to converge that much more quickly. Maybe a factor of two or so.
+
+\subsection{Notes from class}
+Parallel execution in R packages: \texttt{foreach}, \texttt{parallel}, \texttt{doMC}. Good for cross-validation and similar.
+
+\subsubsection{Neural synchrony research}
+Takeaways:
+\begin{itemize}
+	\item GLM's are super useful.
+	\item Most problem involve complicated pipelines
+	\begin{itemize}
+		\item Massive raw data from a study (like neural recordings)
+		\item End goal is a model for tiny data
+		\item Lots of pre-processing, etc. to get to $z$-scores or something
+		\item In this project, raw voltage traces $\rightarrow$ $\sim$8000 test statistics
+		\item Each step in that pipeline makes a ton of model choices, which can bias end results
+	\end{itemize}
+\end{itemize}
+
+Things like ``spike sorting'' are crazy complicated, but seen as just a pre-processing step. This is where the electrode picks up
+more than one neuron but each one seems to be a special snowflake so across many spikes you can actually
+figure out the mixture, generally speaking.
+
+Take N samples of M electrodes, match up how often cell $i$ fired at time $t$, get that trial-averaged histogram.
+
+How to tell things like within-trial background changes, stimulus effects, etc.? Point-process models: GLM framework. In this case,
+ended up being a super-crazy big logistic regression problem. Do that to figure out how likely it \emph{should} be for two particular
+neurons to fire at the same time. Then check how many \emph{were} seen and this tells you how synchronous they are.
+
+Slap that on a log scale, should get something Normal-ish centered at 0. But it's a little bumpy in some places. Have $\sim$8000 test
+statistics with standard errors, want to correct for false discovery rate. Standard thing would be Benjamini-Hochberg to correct
+for multiplicity. Problem: we have covariates for each test that we expect to be related to the likelihood of synchrony. BH throws
+this away. For example, some electrodes are closer together!
+
+\section{Quasi-Newton}
+\subsection{(A)}
+
+
+\subsection{(B)}
+Code is on GitHub.
+
+It seems to need about an order of magnitude fewer iterations to get close to the same value as the steepest descent
+version. However, I had to make several concessions in the code to not produce errors. First was the initialization
+of the inverse hessian. I started at the identity matrix, without using the ``first iteration adjustment'' found in 
+the textbook in Equation (6.20). For some reason, that produced \texttt{nan} for all the parameters being
+fit after a small number of iterations.
+
+Next, I found that because the curvature criterion is no longer guaranteed (including the hessian, especially
+the approximation thereof), the backtracking line search does not always produce good results. In particular,
+using the notation from the book, $y_k^\top s_k$ becomes close to zero or even negative. As such, I chose
+to only update the approximate hessian (technically, updating the inverse) when that quantity was sufficiently
+positive (in my case, $10^{-20}$ seemed sufficient). That means it did not get updated very often (18 times in 2000 iterations), losing a lot of the potential information about the curvature. But it did ensure the monotonicity of the
+improvements in the negative log-likelihood. Apparently, chapter 18 talks about using a damped version
+of BFGS, but I did not attempt to implement it at this time.
+
+
+
+\end{document}

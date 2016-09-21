@@ -8,7 +8,7 @@ weight = function(x, b) {
   # Returns:
   #   The weight. If x is a matrix, will have same number of rows. Resultant
   #   weights will be in the range [1e-6, 1-1e-6] for stability
-  w = (1/(1+exp(-as.matrix(x) %*% as.matrix(b))))
+  w = 1 / (1 + exp(-as.matrix(x) %*% as.matrix(b)))
   w = pmax(w, 1e-6)
   w = pmin(w, 1 - 1e-6)
   return(w)
