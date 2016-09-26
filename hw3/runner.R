@@ -16,7 +16,7 @@ gold.standard.betas = as.numeric(coef(glm(Y ~ X - 1, family = "binomial")))
 gold.standard = -logL(X, gold.standard.betas, Y, 1)
 
 iter = 20000
-ls = line_search(X, Y, m = 1, iter = iter, c = 0.9, rho = 0.5, alpha = 0.1)
+ls = line_search(X, Y, m = 1, iter = iter, cc = 0.9, rho = 0.5, alpha = 0.1)
 plot(ls$nll)
 print(paste("ideal:", gold.standard, "mine:", tail(ls$nll, 1)))
 print(gold.standard.betas)
@@ -28,6 +28,6 @@ plot(ls$beta1, type = "l")
 # Quasi-Newton
 ########################################
 
-qn = quasi_newton(X, Y, m = 1, iter = 2000, c = 0.01, rho = 0.1, alpha = 1)
+qn = quasi_newton(X, Y, m = 1, iter = 200, cc = 0.1, rho = 0.1, alpha = 1)
 plot(qn$nll)
 

@@ -1,3 +1,5 @@
+library(Matrix)
+
 weight = function(x, b) {
   # Function to compute the weight for logistic regression.
   #
@@ -54,16 +56,16 @@ logL = function(x, b, y, m) {
 }
 
 is.sufficient.decrease = function(X, Y, beta, m,
-                                  oldLogL, c, tA, gL, pk) {
+                                  oldLogL, cc, tA, gL, pk) {
   newLogL = -logL(X, beta + tA * pk, Y, m)
-  linearTerm = c * tA * sum(gL * pk)
+  linearTerm = cc * tA * sum(gL * pk)
   oldCond = -oldLogL + linearTerm
   #print(paste(newLogL, linearTerm, -oldLogL, oldCond))
   return(newLogL <= oldCond)
 }
 
 line_search = function(X, Y, m = 1, iter = 100,
-                       c = 0.5, rho = 0.5, alpha = 0.1) {
+                       cc = 0.5, rho = 0.5, alpha = 0.1) {
   P = ncol(X)
   beta = rep(0, P)  # Could use random starting conditions as well.
   logLike = rep(0, iter)
@@ -74,7 +76,7 @@ line_search = function(X, Y, m = 1, iter = 100,
       oldLogL = logL(X, beta, Y, m)
       tempAlpha = alpha
       while (!is.sufficient.decrease(X, Y, beta, m,
-                                     oldLogL, c, tempAlpha,
+                                     oldLogL, cc, tempAlpha,
                                      gL, pk)) {
         tempAlpha = tempAlpha * rho
       }
@@ -93,7 +95,7 @@ line_search = function(X, Y, m = 1, iter = 100,
 ########################################
 
 quasi_newton = function(X, Y, m = 1, iter = 100,
-                        c = 0.5, rho = 0.5, alpha = 0.1) {
+                        cc = 0.5, rho = 0.5, alpha = 0.1) {
   P = ncol(X)
 
   beta = rep(0, P)  # Could use random starting conditions as well.
@@ -105,7 +107,7 @@ quasi_newton = function(X, Y, m = 1, iter = 100,
 
   gL = rep(0, P)
   oldGl = rep(0, P)
-counter = 0
+  counter = 0
   for (i in 1:iter) {
     # Update the old and new gradients
     oldGl = gL
@@ -117,8 +119,10 @@ counter = 0
     # compute the log-likelihood
     oldLogL = logL(X, beta, Y, m)
     tempAlpha = alpha
+
+
     while (!is.sufficient.decrease(X, Y, beta, m,
-                                   oldLogL, c, tempAlpha,
+                                   oldLogL, cc, tempAlpha,
                                    gL, pk)) {
       tempAlpha = tempAlpha * rho
     }
@@ -128,7 +132,7 @@ counter = 0
     beta = beta + tempAlpha * pk
 
     # Convenience variables to follow the notation in the textbook
-    sk = beta - oldBeta
+    sk = tempAlpha * pk
     yk = gL - oldGl
 
     rhok = 1 / sum(sk * yk)
@@ -137,7 +141,14 @@ counter = 0
     # FIXME: I tried this, and it definitely
     # did not work as intended. It
     # basically blew everything up.
+    #
+    # Potentially what to do is to change the line search procedure
+    # to ensure that BOTH Wolfe conditions are satisfied?
+    #
+    # In any case, need to ensure that the hessian.inv is
+    # kept as a positive-definte matrix.
     ########################################
+
     # Update based on first update, see equation (6.20) in textbook
     #if (i == 1) {
     #  hessian.inv = sum(yk * yk) / sum(yk * sk) * hessian.inv
@@ -166,12 +177,13 @@ counter = 0
     # curvature. However, it does seem to converge
     # a bit faster than the steepest descent line search.
     ########################################
-    if (sum(sk * yk) > 1e-20) {
+   # if (sum(sk * yk) > 1e-20) {
       counter = counter + 1
       hessian.inv = (diag(P) - rhok * sk %*% t(yk)) %*%
         hessian.inv %*%
         (diag(P) - rhok * yk %*% t(sk)) + rhok * sk %*% t(sk)
-    }
+      hessian.inv = nearPD(hessian.inv)$mat
+    #}
 
     logLike[i] = oldLogL
     beta1[i] = beta[1]
