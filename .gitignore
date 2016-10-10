@@ -1,6 +1,7 @@
 peer_review/*
 */Eigen/*
 *.rds
+*.RDataTmp
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

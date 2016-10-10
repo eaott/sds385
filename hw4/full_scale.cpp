@@ -24,7 +24,7 @@ double TOL = 1e-6;
 double EPSILON = 1e-8;
 
 // [[Rcpp::export]]
-List test(MyMatrix xCWISE, VectorXd yVector, VectorXd training, const int nIter, const double lambda) {
+List sgd(MyMatrix xCWISE, VectorXd yVector, VectorXd training, const int nIter, const double lambda) {
   /*
   * In this case, we need additional parameters to keep the running
   * values of beta and adaDiag going.
@@ -159,6 +159,8 @@ List test(MyMatrix xCWISE, VectorXd yVector, VectorXd training, const int nIter,
         // // Should this jump be bigger? According to the bryantravissmith
         // // website, maybe take fast_pow(1 - 2 * eta * lambda / sqrt(G_ii), (skip - 1))???
         // b_i = b_i * (1 - 2 * eta * lambda / sqrt(G_ii));
+
+        // FIXME: JUST update b_i, but differently. don't bother with G_ii.
         G_ii = G_ii + (skip - 1) * 4 * lambda * lambda * b_i * b_i;
         b_i = b_i * (1 - 2 * eta * lambda / sqrt(G_ii));
 

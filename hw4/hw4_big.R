@@ -15,7 +15,7 @@ training = 1 - (runif(ncol(X)) < 0.2)
 Rcpp::sourceCpp("full_scale.cpp")
 nIter = 1
 t = proc.time()
-ret = test(X, y, training, nIter, 0.1)
+ret = sgd(X, y, training, nIter, 0.1)
 proc.time() - t
 
 ll = rep(0, length(ret$logL))
@@ -26,6 +26,14 @@ for (i in 2:length(ll)) {
 }
 plot(-ll * length(ll) / nIter, type="l")
 tail(-ll * length(ll) / nIter)
+
+########################################
+# FIXME: Can add an accuracy calculation at the end
+# computing \hat{y} < 0.5 and using y.
+########################################
+
+
+
 
 
 
@@ -50,7 +58,7 @@ wX = t(wX)
 wdcgX = Matrix(wX, sparse=TRUE)
 
 nIter = 10000
-wRet = test(wdcgX, wY, rep(1, ncol(wX)), nIter, 0.1)
+wRet = sgd(wdcgX, wY, rep(1, ncol(wX)), nIter, 0.1)
 
 ll = rep(0, length(wRet$logL))
 ll[1] = wRet$logL[1]
