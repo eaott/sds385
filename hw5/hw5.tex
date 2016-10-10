@@ -127,6 +127,18 @@ $[-1, 1]$ & $x = 0$
 
 \includegraphics[scale=0.5]{mse_lambdas.png}
 
+\subsubsection{Notes from class}
+This independent normal means toy problem is useful for orthogonal decompositions for Fourier analysis or wavelets.
+The context of wavelets is:
+\begin{align*}
+y_i&=f(x_i)+e_i\\
+f(x)*=\sum_{k=1}^D \theta_k \psi_k(x)
+\end{align*}
+where $\psi_k$ are basis functions and $\theta_k$ are coefficients. $\psi_k$ in wavelets are generally not closed-form, but
+easy to graph (see Haar and Daubechies). This reduces down to a regression of normal means (especially if you have $n=2^d$ observations for some $d$, then split the Haar basis functions $d$ times and get $2^d$ values, that means
+that you get $D=2^d$ and you don't want overfitting, so you're just fitting the $\theta_k$ by shrinking normal means.
+
+
 \section{The lasso}
 
 \includegraphics[scale=0.35]{overall.png}

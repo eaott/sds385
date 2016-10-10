@@ -35,7 +35,9 @@ thetas = 10 * (2 * rbinom(n, 1, 0.5) - 1) * rbinom(n, 1, p)
 sigmas = rep(2, n)
 zs = rnorm(n, thetas, sigmas)
 lambdas = c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 5, 10)
-S_lambda = sapply(lambdas, function(lambda) {sign(zs) * pmax(abs(zs) - lambda * sigmas * sigmas, 0)})
+S_lambda = sapply(lambdas, function(lambda) {
+  sign(zs) * pmax(abs(zs) - lambda * sigmas * sigmas, 0)
+  })
 
 data = data.frame(
   values = c(S_lambda),
@@ -43,11 +45,12 @@ data = data.frame(
   th = factor(rep(thetas, length(lambdas)))
 )
 par(mfrow=c(1,1))
-ggplot(data, aes(x = th, y=values)) + geom_boxplot() +
+ggplot(data, aes(x = th, y=values)) + geom_violin() +
   facet_wrap(~ lmb) +
   xlab(expression(theta)) + ylab(quote(widehat(theta)(y[i])))
 
-mse = sapply(1:length(lambdas), function(i){a = S_lambda[, i] - thetas;
-                              return(sum(a * a) / n)})
+mse = sapply(1:length(lambdas), function(i){
+  a = S_lambda[, i] - thetas;
+  return(sum(a * a) / n)})
 plot(mse ~ lambdas, type="l", log="xy")
 
