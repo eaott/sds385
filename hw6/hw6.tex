@@ -1,0 +1,111 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=red}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}HW 6\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+%\date{DATE}
+\setcounter{secnumdepth}{1}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+\section{Proximal operators}
+\subsection{(A)}
+\begin{align*}
+f(x)&\approx \hat{f}(x;x_0)=f(x_0)+(x-x_0)^{(t)}\nabla f(x_0)\\
+\textrm{prox}_\gamma \hat{f}(x)&=\arg\min_z \left[ \hat{f}(z) + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
+&=\arg\min_z \left[ f(x_0)+(z-x_0)^{(t)}\nabla f(x_0) + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
+0&=\frac{\partial}{\partial z}\left[ f(x_0)+(z-x_0)^{(t)}\nabla f(x_0) + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
+&=0 + \nabla f(x_0) + \frac{1}{2\gamma}(2z^* - 2x)=\nabla f(x_0) + \frac{1}{\gamma}(z^* - x)\\
+\textrm{prox}_\gamma \hat{f}(x)=z^*&=x-\gamma \nabla f(x_0)
+\end{align*}
+which is indeed the gradient-descent step for $f(x)$ of size $\gamma$ starting at $x_0$.
+
+\subsection{(B)}
+\begin{align*}
+l(x)&=\frac{1}{2}x^\top P x - q^\top x + r\\
+\textrm{prox}_{1/\gamma}l(x)&=\arg\min_z \arg\min_z \left[ \hat{l}(z) + \frac{\gamma}{2} \lVert z-x\rVert_2^2 \right]\\
+&= \arg\min_z \left[ \frac{1}{2}z^\top P z - q^\top z + r + \frac{\gamma}{2} \lVert z-x\rVert_2^2 \right]\\
+0&=\frac{\partial}{\partial z}\left[ \frac{1}{2}z^\top P z - q^\top z + r + \frac{\gamma}{2} \lVert z-x\rVert_2^2 \right]\\
+&=Pz^* - q + \gamma (z^* - x)\\
+\gamma x + q&= \left(P + \gamma I\right) z^*\\
+\textrm{prox}_{1/\gamma}l(x)=z^*&=\left(P + \gamma I\right)^{-1}(\gamma x + q)
+\end{align*}
+assuming $\left(P + \gamma I\right)^{-1}$ exists.
+
+If we have $ y | x \sim N(Ax, \Omega^{-1})$ with $y$ having $n$ rows, then
+\begin{align*}
+L(y | x)&=\frac{1}{\sqrt{2\pi}^n} |\Omega|^{-1/2} \exp\left[- \frac{1}{2}(y-Ax)^\top \Omega^{-1} (y-Ax)\right]\\
+n(y|x)=-\log L(y|x)&=\frac{1}{2}\log |\Omega| +\frac{n}{2}\log(2\pi) + \frac{1}{2}(y-Ax)^\top \Omega^{-1} (y-Ax)\\
+&=\frac{1}{2}y^\top \Omega^{-1} y - (Ax)^\top\Omega^{-1} y + \frac{1}{2}(Ax)^\top\Omega^{-1} Ax + \frac{1}{2}\log |\Omega| +\frac{n}{2}\log(2\pi)
+\end{align*}
+So $P=\Omega^{-1}$, $q=\Omega^{-1}Ax$ (because $\Omega=\Omega^\top$ since it is a covariance matrix), and $r=\frac{1}{2}(Ax)^\top\Omega^{-1} Ax + \frac{1}{2}\log |\Omega| +\frac{n}{2}\log(2\pi)$.
+
+
+\subsection{(C)}
+\begin{align*}
+\phi(x)&=\tau \lVert x\rVert_1\\
+\textrm{prox}_\gamma \phi(x)&=\arg\min_z \left[ \phi(z) + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
+&=\arg\min_z \left[ \tau \lVert z \rVert_1 + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
+&=\arg\min_z \left[ \tau \sum_{i=1}^n \left(|z_i|\right) + \frac{1}{2\gamma} \sum_{i=1}^n\left( (z_i-x_i)^2 \right) \right]\\
+&=\arg\min_z \left[\sum_{i=1}^n \frac{1}{2\gamma}(z_i-x_i)^2 + \tau |z_i| \right]\\
+&=\arg\min_z \left[\sum_{i=1}^n \frac{1}{2}(z_i-x_i)^2 + \tau\gamma |z_i| \right]
+\end{align*}
+The term being minimized for each component $z_i$ is exactly $S_{\tau\gamma}(x_i)$ from the notation last week, and
+there are no interaction terms between the $z_i$ and $z_j$ for $i\neq j$, so
+\begin{align*}
+\left(\textrm{prox}_\gamma \phi(x)\right)_i=S_{\tau\gamma}(x_i)
+\end{align*}
+
+
+\section{The proximal gradient method}
+\subsection{(A)}
+
+
+\end{document}

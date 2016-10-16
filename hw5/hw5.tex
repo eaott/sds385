@@ -127,7 +127,7 @@ $[-1, 1]$ & $x = 0$
 
 \includegraphics[scale=0.5]{mse_lambdas.png}
 
-\subsubsection{Notes from class}
+\subsection{Notes from class}
 This independent normal means toy problem is useful for orthogonal decompositions for Fourier analysis or wavelets.
 The context of wavelets is:
 \begin{align*}
@@ -142,5 +142,23 @@ that you get $D=2^d$ and you don't want overfitting, so you're just fitting the 
 \section{The lasso}
 
 \includegraphics[scale=0.35]{overall.png}
+
+\subsection{Notes from class}
+If there's a piecewise sort of function, we can use the fused lasso instead:
+
+\begin{align*}
+\min_\beta \left[\lVert y-\beta\rVert_2^2+\lambda \sum_{i=1}^{n-1}|\beta_i-\beta_{i-1}|\right]\\
+D=\begin{pmatrix}
+1 & -1 & 0 & \cdots\\
+0 & 1 & -1 & \cdots\\
+0 & 0 & 1 & \cdots\\
+\vdots & \vdots & \vdots
+\end{pmatrix}\\
+\gamma=D\beta\\
+X=D^-\\
+\min_\beta \left[\lVert y-X\gamma\rVert_2^2+\lambda \lVert \gamma \rVert_1 \right]\\
+\end{align*}
+
+The risk of the lasso is less than or equal to the best risk plus a term that grows with $1/\sqrt{n}$. 
 
 \end{document}

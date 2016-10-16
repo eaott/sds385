@@ -35,6 +35,10 @@ n = nrow(x)
 ind = sample(1:n, n)
 folds = 26 # n / 26 is an integer
 mses = c()
+########################################
+# FIXME: use the `cut` function instead for indices
+########################################
+
 for (f in 1:folds) {
   starti = n / folds * (f - 1) + 1
   endi = n / folds * f
@@ -60,24 +64,44 @@ myplot = data.frame(mse = mses.mean,
                     base = base.mse,
                     cp = Cp)
 
-g2 = ggplot(myplot) + geom_line(aes(x=log(lmb), y=mse)) +
-  #geom_errorbar(aes(x=lmb, ymax=mse + err, ymin=mse - err)) +
-  geom_line(aes(x=log(lmb), y=base), col="red") +
-  geom_line(aes(x=log(lmb), y=cp), col="green") +
-  xlim(c(max(log(fit$lambda)), min(log(fit$lambda)))) +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$base)]), col="red") +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$mse)])) +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$cp)]), col="green")
 
-g1 = ggplot(plotdata, aes(x=log(repLambdas), y=value, group=Var2, colour=Var2)) +
-  geom_line() + guides(group=FALSE, colour=FALSE) +
-  xlab(expression(log(lambda))) + ylab(quote(widehat(beta)[lambda])) +
+########################################
+# FIXME: to get geom_vline to work nicely, need to add a column
+# to myplot2 that basically transposes the type variable to the
+# log(lambda[which.min(type)]) sort of thing.
+########################################
+
+mse_lambda = myplot$lmb[which.min(base.mse)]
+moose_lambda = myplot$lmb[which.min(mses.mean)]
+cp_lambda = myplot$lmb[which.min(Cp)]
+
+myplot2 = data.frame(val = c(base.mse, mses.mean, Cp),
+                     lmb = rep(fit$lambda, 3),
+                     type = rep(c("mse", "moose", "cp"), each=length(fit$lambda)),
+                     xint = rep(c(mse_lambda, moose_lambda, cp_lambda), each=length(fit$lambda)))
+ggplotColours <- function(n = 6, h = c(0, 360) + 15){
+  if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
+  hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
+}
+cols = ggplotColours(n = 3)
+g2 = ggplot(myplot2, aes(x=log(lmb), y=val, col=type)) +
+  geom_line() +
   xlim(c(max(log(fit$lambda)), min(log(fit$lambda)))) +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$base)]), col="red") +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$mse)])) +
-  geom_vline(xintercept=log(myplot$lmb[which.min(myplot$cp)]), col="green")
+  geom_vline(xintercept=log(mse_lambda), col=cols[3]) +
+  geom_vline(xintercept=log(moose_lambda), col=cols[2]) +
+  geom_vline(xintercept=log(cp_lambda), col=cols[1]) +
+  # geom_vline(aes(xintercept=log(xint), col=cols[as.factor(type)]), show.legend = FALSE) +
+  xlab(expression(log(lambda))) +
+  ylab("error") + theme(legend.position = c(.85, .65), legend.title=element_blank())
+
+g1 = ggplot(plotdata, aes(x=log(repLambdas), y=value, group=Var2, col=Var2)) +
+  geom_line() +
+  geom_vline(xintercept=log(mse_lambda), col=cols[3]) +
+  geom_vline(xintercept=log(moose_lambda), col=cols[2]) +
+  geom_vline(xintercept=log(cp_lambda), col=cols[1]) +
+  guides(group=FALSE, colour=FALSE) +
+  xlab(expression(log(lambda))) + ylab(quote(widehat(beta)[lambda])) +
+  xlim(c(max(log(fit$lambda)), min(log(fit$lambda))))
 
 
 grid.arrange(g2, g1, ncol=1, heights=c(0.5, 1.5))
-
-
