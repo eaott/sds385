@@ -37,7 +37,7 @@ for (t in 1:n.iter) {
   oldbeta = beta.acc
   beta.acc = sign(u.acc) * pmax(abs(u.acc) - lambda * gamma, 0)
   st1 = (1 + (1 + 4 * st ^ 2) ^ 0.5) / 2
-  z.acc = beta.acc + (st - 1) / st1 * (oldbeta - beta.acc)
+  z.acc = beta.acc + (st - 1) / st1 * (beta.acc - oldbeta)
   st = st1
   objective.acc[t] = sum((y - x %*% beta.acc) ^ 2) + lambda * sum(abs(beta.acc))
 }
