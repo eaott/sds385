@@ -89,6 +89,7 @@ So $P=\Omega^{-1}$, $q=\Omega^{-1}Ax$ (because $\Omega=\Omega^\top$ since it is 
 
 
 \subsection{(C)}
+\label{sec:1c}
 \begin{align*}
 \phi(x)&=\tau \lVert x\rVert_1\\
 \textrm{prox}_\gamma \phi(x)&=\arg\min_z \left[ \phi(z) + \frac{1}{2\gamma} \lVert z-x\rVert_2^2 \right]\\
@@ -275,5 +276,54 @@ y^{(t+1)}&=y^{(t)} + \alpha^{(t)} \left(Ax^{(t+1)}-b\right)
 which is nice because we never actually have to use the dual function. At convergence, $x^{(T)}=x^*$ and $y^{(T)}=y^*$.
 
 This is most of the understanding we need for ADMM, but leaves out the method of multipliers (related to augmented Lagrangian).
+
+\section{Notes from class October 19}
+
+Final project: could be diving into a topic we've covered, applying an algorithm to new, richer data, etc. Could replicate
+results of a paper. Should have a non-trivial computational (likely) or theoretical (rare) component. Can work in pairs
+if doing a ``new'' project. Should have a 1-2 page outline of an idea by November. Final project should be in \LaTeX or
+a python notebook or Rmarkdown.
+
+\subsection{Connection to readings course}
+Fun fact that I worked on. Instead of looking at the proximal operator of $|x|$, we can look at the envelope function.
+In \nameref{sec:1c} above, let $\tau=n=1$, in other words, letting $\phi(x)=\lVert x\rVert_1=|x|$. I already showed that the
+proximal operator is $\textrm{prox}_\gamma \phi(x)=S_\gamma(x)=\textrm{sign}(x)\left(|x|-\gamma\right)_+$.
+
+That's the $\arg\min$ of the regularized objective. So, we can plug that into the regularized objective and we get
+the envelope:
+\begin{align*}
+E_\gamma \phi(x)=E_\gamma |x|&=\left|S_\gamma(x)\right|+\frac{1}{2\gamma}\left\lVert S_\gamma(x) - x \right\rVert_2^2\\
+&=\left|\textrm{sign}(x)\left(|x|-\gamma\right)_+\right|+\frac{1}{2\gamma}\left\lVert S_\gamma(x) - x \right\rVert_2^2\\
+&=\left(|x|-\gamma\right)_+ + \frac{1}{2\gamma}\left\lVert S_\gamma(x) - x \right\rVert_2^2\\
+S_\gamma(x)&=\left\{\begin{array}{cc}
+x-\gamma & |x| \geq \gamma \wedge x > 0\\
+x + \gamma & |x| \geq \gamma \wedge x < 0\\
+0 & \textrm{otherwise}
+\end{array}\right.~~~~~{\small\textrm{(reminder from hw5)}}\\
+E_\gamma |x|&=\left(|x|-\gamma\right)_+ + \frac{1}{2\gamma}\left\lVert S_\gamma^*(x) \right\rVert_2^2\\
+S_\gamma^*(x)&=\left\{\begin{array}{cc}
+-\gamma & |x| \geq \gamma \wedge x > 0\\
++ \gamma & |x| \geq \gamma \wedge x < 0\\
+-x & \textrm{otherwise}
+\end{array}\right.\\
+E_\gamma |x|&=\left(|x|-\gamma\right)_+ + \frac{1}{2\gamma} \gamma^2 \cdot I(|x|\geq\gamma) + \frac{1}{2\gamma} x^2 \cdot I(|x|<\gamma)\\
+E_\gamma |x|&=\left(|x|-\gamma\right)\cdot I(|x|\geq\gamma) + \frac{\gamma}{2} \cdot I(|x|\geq\gamma) + \frac{1}{2\gamma} x^2 \cdot I(|x|<\gamma)\\
+&=\left\{\begin{array}{cc}
+|x|-\gamma+\frac{\gamma}{2} & |x| \geq \gamma\\
+\frac{x^2}{2\gamma} & \textrm{otherwise}
+\end{array}\right.=\left\{\begin{array}{cc}
+|x|-\frac{\gamma}{2} & |x| \geq \gamma\\
+\frac{x^2}{2\gamma} & \textrm{otherwise}
+\end{array}\right.\\
+&=\frac{1}{\gamma} H_\gamma(x)
+\end{align*}
+where $H_\gamma(x)$ is the Huber loss function: $H_\gamma(x) = \frac{1}{2}x^2 \cdot I(|x|<\gamma) + \left(\gamma|x|-\frac{1}{2}\gamma^2\right)\cdot I(|x|\geq \gamma)$
+
+
+
+
+
+
+
 
 \end{document}
