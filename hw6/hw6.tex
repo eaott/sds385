@@ -319,9 +319,25 @@ E_\gamma |x|&=\left(|x|-\gamma\right)\cdot I(|x|\geq\gamma) + \frac{\gamma}{2} \
 \end{align*}
 where $H_\gamma(x)$ is the Huber loss function: $H_\gamma(x) = \frac{1}{2}x^2 \cdot I(|x|<\gamma) + \left(\gamma|x|-\frac{1}{2}\gamma^2\right)\cdot I(|x|\geq \gamma)$
 
-
-
-
+If we generalize a bit to $\phi(x)=\tau |x|$,
+\begin{align*}
+E_\gamma \phi(x)=E_\gamma \tau|x|&=\left|S_{\tau\gamma}(x)\right|+\frac{1}{2\gamma}\left\lVert S_{\tau\gamma}(x) - x \right\rVert_2^2\\
+&=\left|\textrm{sign}(x)\left(|x|-\tau\gamma\right)_+\right|+\frac{1}{2\gamma}\left\lVert S_{\tau\gamma}(x) - x \right\rVert_2^2\\
+&=\left(|x|-\tau\gamma\right)_+ + \frac{1}{2\gamma}\left\lVert S_{\tau\gamma}(x) - x \right\rVert_2^2\\
+&=\left(|x|-\tau\gamma\right)_+ + \frac{1}{2\gamma}\left\lVert S_{\tau\gamma}^*(x) \right\rVert_2^2\\
+S_{\tau\gamma}^*(x)&=\left\{\begin{array}{cc}
+-\tau\gamma & |x| \geq \tau\gamma \wedge x > 0\\
++ \tau\gamma & |x| \geq \tau\gamma \wedge x < 0\\
+-x & \textrm{otherwise}
+\end{array}\right.\\
+E_\gamma \tau|x|&=\left(|x|-\tau\gamma\right)_+ + \frac{1}{2\gamma} \tau^2\gamma^2 \cdot I(|x|\geq\tau\gamma) + \frac{1}{2\gamma} x^2 \cdot I(|x|<\tau\gamma)\\
+&=\left(|x|-\tau\gamma\right)\cdot I(|x|\geq\tau\gamma) + \frac{\tau^2\gamma}{2} \cdot I(|x|\geq\gamma) + \frac{1}{2\gamma} x^2 \cdot I(|x|<\tau\gamma)\\
+&=\left\{\begin{array}{cc}
+|x|-\tau\gamma+\frac{\tau^2\gamma}{2} & |x| \geq \tau\gamma\\
+\frac{x^2}{2\gamma} & \textrm{otherwise}
+\end{array}\right.
+\end{align*}
+which is at least not obviously directly a function of the Huber loss.
 
 
 
