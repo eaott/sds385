@@ -284,7 +284,37 @@ results of a paper. Should have a non-trivial computational (likely) or theoreti
 if doing a ``new'' project. Should have a 1-2 page outline of an idea by November. Final project should be in \LaTeX or
 a python notebook or Rmarkdown.
 
-\subsection{Connection to readings course}
+\section{Notes from class October 24}
+HW 8 will be looking at spatial smoothing of fMRI data. This is more or less de-noising as a pre-processing step in terms of fMRI analysis.
+Will use Laplacian smoothing ($y$ data, $x$ underlying graph, and $L$ the Laplacian matrix)
+in closed form (will need to solve sparse linear system using either existing algorithms we've looked at or an iterative solution and compare).
+Will also use the graph fused lasso (not a sparse solution, but piecewise constant so the differences are sparse) which will use ADMM. There's
+simple and slow ADMM, or a more efficient one, or the state-of-the-art (milliseconds versus seconds).
+
+Now, back to looking at proximal gradient.
+
+TODO Should compare my own code to glmnet to see how the coefficients did,
+ensure that the right lambda conversion is taking place.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Connection to readings course}
 Fun fact that I worked on. Instead of looking at the proximal operator of $|x|$, we can look at the envelope function.
 In \nameref{sec:1c} above, let $\tau=n=1$, in other words, letting $\phi(x)=\lVert x\rVert_1=|x|$. I already showed that the
 proximal operator is $\textrm{prox}_\gamma \phi(x)=S_\gamma(x)=\textrm{sign}(x)\left(|x|-\gamma\right)_+$.

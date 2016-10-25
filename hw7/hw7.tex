@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+\usepackage[authoryear,round]{natbib}
+
+
+
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}HW 7\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+%\date{DATE}
+\setcounter{secnumdepth}{0}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+
+\section{HW}
+
+
+
+
+Here, algorithms are based on \S6.4 in \citep{boyd2011distributed}. For more information, see \S3.3 and \S5 in \citep{boyd2004convex}.
+
+
+
+The lasso is commonly written as
+\begin{align*}
+x^*=\arg\min_x\left(\frac{1}{2}\lVert Ax-b\rVert_2^2 + \lambda \lVert x\rVert_1\right)
+\end{align*}
+Similar to the last homework, we can split this up into the differentiable part and non-differentiable part, which
+gives rise to the ADMM form.
+\begin{align*}
+\textrm{minimize}~~ &\lVert Ax-b\rVert_2^2 + \lambda \lVert z\rVert_1\\
+\textrm{s.t.}~~&x-z=0
+\end{align*}
+In other words, 
+\begin{align*}
+f(x)&=\frac{1}{2}\lVert Ax-b\rVert_2^2 = \frac{1}{2}x^\top A^\top A x - b^\top Ax+\frac{1}{2}y^\top y=\frac{1}{2}x^\top Px+q^\top x+r\\
+P&=A^\top A\\
+q&=-A^\top b\\
+g(z)&=\lambda \lVert z\rVert_1\\
+Ix + (-I)z &= x-z = c = 0
+\end{align*}
+So we can break up the minimization according to \S4.2 to find the optimal value for $x$:
+\begin{align*}
+x^+&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert Ax-(z+0-u) \right\rVert_2^2 \right)\\
+&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert Ax - z + u \right\rVert_2^2 \right)\\
+&=\arg\min_x \left( \frac{1}{2}x^\top Px+q^\top x+r + \frac{\rho}{2}\left\lVert Ax - z + u \right\rVert_2^2 \right)\\
+&=\left(P + \rho I^\top I\right)^{-1}\left(\rho I v-q\right)~~~\textrm{[see equation (4.1) for quadratic functions]}\\
+&=\left( A^\top A+ \rho I\right)^{-1}\left(\rho  (z - u)+A^\top b\right)
+\end{align*}
+
+Now, the update for $z$:
+\begin{align*}
+g(z)&=\lambda \lVert z\rVert_1=\sum_{i=1}^p \lambda |z_i|=\sum_{i=1}^p h(z_i)
+\end{align*}
+so the objective for $z$ is component separable, so we can minimize each element separately:
+\begin{align*}
+\textrm{minimize}~~ &g(z)\\
+\textrm{s.t.}~~ & x-z=0\\
+z_i^+&=\arg\min_{z_i} \left(h(z_i) + \frac{\rho}{2} (x_i-z_i+u_i)^2 \right)\\
+&=\arg\min_{z_i} \left(h(z_i) + \frac{\rho}{2} (z_i-(x_i+u_i))^2 \right)\\
+v_i&=x_i+u_i  \\
+&=\arg\min_{z_i} \left(h(z_i) + \frac{\rho}{2} (z_i - v_i)^2 \right)\\
+&=S_{\lambda/\rho}(v_i)~~~\textrm{[see \S4.4.3]}\\
+&=S_{\lambda/\rho}(x_i+u_i)
+\end{align*}
+
+Then finally for $u$,
+\begin{align*}
+u^+&=u+I x + (-I)z-0=u+x-z~~~\textrm{]see equation (3.7)]}
+\end{align*}
+
+
+
+TODO: refactor code to have ``accelerated proximal gradient'' and ``ADMM'' functions.
+
+See R code on GitHub.
+
+\bibliographystyle{plainnat}
+\bibliography{../references}
+
+
+\end{document}
