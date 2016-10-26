@@ -212,6 +212,10 @@ admm = function(x, y, n.iter, lambda.lasso, rho) {
 ########################################
 
 # Using C_p from glmnet's default behavior, get lambda \approx 0.03
+# lambda = 0.01   # admm .... prox/accel.prox
+# lambda = 0.03   # admm ... prox .. accel.prox
+# lambda = 0.07   # admm . accel.prox . prox
+# lambda = 0.1    # prox .. accel.prox ... admm
 lambda = 0.03
 
 # Get result from glmnet to compare against because we can.
@@ -263,19 +267,20 @@ names(res) = c("glm", "glm v.2", "admm", "prox", "accel.prox")
 
 # Plot the coefficients in the same image
 par(mfrow = c(1, 3))
-plot(res$admm ~ res$glm,
-     pch = 19, col = "green", xlab = "GLM", ylab = "ADMM",
-     main = "ADMM vs. GLM", asp = 1)
-abline(a = 0, b = 1, h = 0, v = 0)
 plot(res$prox ~ res$glm,
-     pch = 17, col = "lightblue", xlab = "GLM", ylab = "proximal gradient",
+     pch = 17, col = "blue", xlab = "GLM", ylab = "proximal gradient",
      main = "prox vs. GLM", asp = 1)
 abline(a = 0, b = 1, h = 0, v = 0)
 plot(res$accel.prox ~ res$glm,
-     pch = 17, col = "red", xlab = "GLM", ylab = "Accelerated proximal gradient",
+     pch = 18, col = "red", xlab = "GLM", ylab = "Accelerated proximal gradient",
      main = "accel vs. GLM", asp = 1)
+abline(a = 0, b = 1, h = 0, v = 0)
+plot(res$admm ~ res$glm,
+     pch = 19, col = "green", xlab = "GLM", ylab = "ADMM",
+     main = "ADMM vs. GLM", asp = 1)
 abline(a = 0, b = 1, h = 0, v = 0)
 
 # also show coefficients textually
 res
 head(res, 10)
+
