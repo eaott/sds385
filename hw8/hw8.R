@@ -9,7 +9,29 @@ c.fmri = c(fmri)
 D = makeD2_sparse(nrow(fmri), ncol(fmri))
 L = t(D) %*% D
 
-lu.solve = function(A, b) {
+lu.solve = function(A, b, useCache = TRUE) {
+  # Solves A x = b for x using a sparse LU decomposition.
+  #
+  # Args:
+  #   A: Design matrix, should be a dgCMatrix for handling sparsity
+  #   b: Response vector
+  #   useCache: Determines whether to use any cached LU decomposition in A.
+  #             In production, should be left alone, but it's useful for
+  #             benchmarking to set to FALSE.
+  #
+  # Returns:
+  #   The fitted value of x.
+  if (!("dgCMatrix" %in% class(A))) {
+    stop("Design matrix A should be a dgCMatrix")
+  }
+
+  # Hobbitses are tricksey
+  # The lu() function will cache results in the associated Matrix object
+  # and re-use them, which makes benchmarking a little unfair. This forces
+  # the decomposition to happen every time.
+  if (!useCache) {
+    C@factors = list()
+  }
   # sparseLU (see ?lu):
   # decomposition: A = P' L U Q
   # problem: A x = b
@@ -37,7 +59,21 @@ lu.solve = function(A, b) {
   return(x)
 }
 
-gaussseidel.solve = function(A, b, n.iter = 10) {
+gaussseidel.solve = function(A, b, n.iter = 200, tol = 1e-20) {
+  # Solves A x = b for x using a the Gauss-Seidel iterative method
+  #
+  # Args:
+  #   A: Design matrix, should be a dgCMatrix for handling sparsity
+  #   b: Response vector
+  #   n.iter: Max number of iterations to run.
+  #   tol: Tolerance for sum of squared differences in guesses for x between
+  #        iterations
+  #
+  # Returns:
+  #   The fitted value of x.
+  if (!("dgCMatrix" %in% class(A))) {
+    stop("Design matrix A should be a dgCMatrix")
+  }
   # triu and tril take the upper and lower triangular matrices of their input
   # k = 0 by default keeps the diagonal, and k = 1 keeps only the diagonals
   # above the diagonal (k = 2 would throw out the diagonal above the main, etc.)
@@ -50,7 +86,7 @@ gaussseidel.solve = function(A, b, n.iter = 10) {
     # Leverages a) sparse matrix functionality and b) L x = b solution
     # where L is lower-triangular
     x = Matrix::solve(L.star, b - U %*% x, system = "L")
-    if (sum(abs(x.old - x) ^ 2) < 1e-20) {
+    if (sum(abs(x.old - x) ^ 2) < tol) {
       #print(paste("gs:", i, "iterations"))
       break
     }
@@ -58,17 +94,33 @@ gaussseidel.solve = function(A, b, n.iter = 10) {
   return(x)
 }
 
-jacobi.solve = function(A, b, n.iter = 100) {
+jacobi.solve = function(A, b, n.iter = 200, tol = 1e-20) {
+  # Solves A x = b for x using a the Jacobi iterative method
+  #
+  # Args:
+  #   A: Design matrix, should be a dgCMatrix for handling sparsity
+  #   b: Response vector
+  #   n.iter: Max number of iterations to run.
+  #   tol: Tolerance for sum of squared differences in guesses for x between
+  #        iterations
+  #
+  # Returns:
+  #   The fitted value of x.
+  if (!("dgCMatrix" %in% class(A))) {
+    stop("Design matrix A should be a dgCMatrix")
+  }
+
   # Using the Diagonal constructor keeps everything sparse
   R = A - Diagonal(x = diag(A))
-  # Only store the inverse of the values along the diagonal
+  # Only store the inverse of the values along the diagonal for faster
+  # computation.
   D.inv = 1 / diag(A)
 
   x = rep(0, length(b))
   for (i in 1:n.iter) {
     x.old = x
     x = D.inv * (b - R %*% x)
-    if (sum(abs(x.old - x) ^ 2) < 1e-20) {
+    if (sum(abs(x.old - x) ^ 2) < tol) {
       #print(paste("jac:", i, "iterations"))
       break
     }
@@ -106,12 +158,10 @@ microbenchmark::microbenchmark(lu.solve(C, c.fmri),
                                jacobi.solve(C, c.fmri, n.iter = n.iter),
                                times = 10L)
 
-fair = function(fn, a, b, ...) {
-  a@factors = list()
-  fn(a, b, ...)
-}
-microbenchmark::microbenchmark(fair(lu.solve, C, c.fmri),
-                               fair(gaussseidel.solve, C, c.fmri, n.iter = n.iter),
-                               fair(jacobi.solve, C, c.fmri, n.iter = n.iter),
+# Added a flag to lu.solve to handle this with correct scoping
+microbenchmark::microbenchmark(lu.solve(C, c.fmri, useCache = FALSE),
+                               gaussseidel.solve(C, c.fmri, n.iter = n.iter),
+                               jacobi.solve(C, c.fmri, n.iter = n.iter),
                                times = 10L)
+
 
