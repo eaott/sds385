@@ -9,7 +9,7 @@ c.fmri = c(fmri)
 D = makeD2_sparse(nrow(fmri), ncol(fmri))
 L = t(D) %*% D
 
-lambda = 1
+lambda = 2
 C = Diagonal(128 ** 2) + lambda * L
 n.iter = 200
 x = lu.solve(C, c(fmri))
@@ -21,11 +21,13 @@ gsxMat = matrix(gs.x, nrow=128)
 jacxMat = matrix(jac.x, nrow=128)
 
 par(mfrow = c(2, 2))
-cols = gray((0:15 / 15) ^ 0.67)
+cols = gray((0:50 / 50) ^ 0.67)
 image(fmri, col = cols, main = "raw")
 image(xMat, col = cols, main = "lu")
 image(gsxMat, col = cols, main = "gs")
 image(jacxMat, col = cols, main = "jac")
+
+
 
 # HOBBITSES ARE TRICKSEY
 # This is a completely unfair comparison as-is.
