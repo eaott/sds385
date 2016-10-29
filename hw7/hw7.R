@@ -194,6 +194,11 @@ admm = function(x, y, n.iter, lambda.lasso, rho) {
     z.admm = sign(temp) * pmax(abs(temp) - lambda / rho, 0)
     u.admm = u.admm + beta.admm - z.admm
 
+    ########################################
+    # FIXME: should use the ADMM-specific convergence
+    # criteria instead.
+    ########################################
+
     # Store objective value, check convergence.
     objective.admm[t] = objective.fn(x, y, beta.admm, 2 * lambda)
     if (is.converged(beta.admm, oldbeta, TOL)) {
@@ -255,7 +260,8 @@ data = data.frame(objective = c(admm.result$objective,
                                 rep("prox", prox.result$n),
                                 rep("accel.prox", accel.prox.result$n)))
 ggplot(data) + geom_line(aes(iter, objective, group = algorithm, col = algorithm)) +
-  geom_vline(aes(xintercept = n, col = algorithm, group = algorithm), show.legend = FALSE)
+  geom_vline(aes(xintercept = n, col = algorithm, group = algorithm), show.legend = FALSE) +
+  scale_x_log10()
 
 # Now, look at the coefficients instead of the objective.
 res = round(data.frame(as.numeric(glmResult$beta),

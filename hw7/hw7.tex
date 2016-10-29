@@ -90,9 +90,9 @@ Ix + (-I)z &= x-z = c = 0
 \end{align*}
 So we can break up the minimization according to \S4.2 to find the optimal value for $x$:
 \begin{align*}
-x^+&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert Ax-(z+0-u) \right\rVert_2^2 \right)\\
-&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert Ax - z + u \right\rVert_2^2 \right)\\
-&=\arg\min_x \left( \frac{1}{2}x^\top Px+q^\top x+r + \frac{\rho}{2}\left\lVert Ax - z + u \right\rVert_2^2 \right)\\
+x^+&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert x-(z+0-u) \right\rVert_2^2 \right)\\
+&=\arg\min_x \left( f(x) + \frac{\rho}{2}\left\lVert x - z + u \right\rVert_2^2 \right)\\
+&=\arg\min_x \left( \frac{1}{2}x^\top Px+q^\top x+r + \frac{\rho}{2}\left\lVert x - z + u \right\rVert_2^2 \right)\\
 &=\left(P + \rho I^\top I\right)^{-1}\left(\rho I v-q\right)~~~\textrm{[see equation (4.1) for quadratic functions]}\\
 &=\left( A^\top A+ \rho I\right)^{-1}\left(\rho  (z - u)+A^\top b\right)
 \end{align*}
