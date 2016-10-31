@@ -68,6 +68,8 @@ rulesepcolor=\color{black},
 \section{Laplacian smoothing}
 
 \subsection{(A)}
+FIXME: do this
+
 
 \subsection{(B)}
 The problem is
@@ -83,7 +85,124 @@ which we can find a solution for by taking the gradient w.r.t. $x$.
 
 \subsection{(C)}
 
+\subsubsection{Gauss-Seidel}
+Solving $Ax=b$ in this framework amounts to splitting $A=L_*+U$ where $L_*$ is the lower triangular matrix
+(including the diagonal) and $U$ is the upper triangular matrix (excluding the diagonal).
+
+The algorithm is then re-writing the problem iteratively as which can be solved with forward substitution.
+$$L_* x^+ = b - Ux$$
+
+See \cite{barrett1994templates} \S2.2.2 and Equation (2.6) (slightly different notation but same result).
+
+\subsubsection{Jacobi}
+Again solving $Ax=b$, we split into $A=D+R$ where $D$ is just the diagonals and $R$ is everything else (with 0 along the diagonal).
+
+We then iterate
+$$x^+ = D^{-1} (b-Rx)$$
+
+What's nice here from an efficiency perspective is that $D$ is easily invertible (so long as there are no zeros in the diagonal), and potentially linearizable depending on the underlying code implementation.
+
+See \cite{barrett1994templates} \S2.2.1 and Equation (2.4) (slightly different notation but same result).
+
+
+\subsubsection{Conjugate Gradient}
+$Ax=b$ is equivalent to minimizing $\phi(x)=\frac{1}{2}x^\top A x -b^\top x$ if $A$ is symmetric.
+
+\begin{align*}
+\nabla \phi(x) = Ax-b \equiv r(x)
+\end{align*}
+
+Then define $\{ p_0, p_1, \ldots, p_n\}$ as being conjugate w.r.t. $A$, such that
+$p_i^\top A p_j = 0$ when $i\neq j$.
+
+Now the algorithm proceeds as
+\begin{align*}
+x^{(k+1)} &= x^{(k)} + \alpha_k p_k\\
+\alpha_k &= -\frac{r_k^\top p_k}{p_k^\top A p_k}
+\end{align*}
+
+So now we need to determine how to construct the $p_k$ vectors. You could use eigenvectors, but those
+are in general pretty expensive to calculate. So now, let
+\begin{align*}
+p_0 &= -r_0\\
+p_k &= -r_k + \beta_k p_{k-1}\\
+\beta_k &= \frac{r_{k+1}^\top r_{k+1}}{r_k^\top r_k}
+\end{align*}
+
+
+
+\subsection{Notes from class}
+Next week: graph fused lasso.
+
+Conjugate gradient is a lot more complicated, and is in fact solving a more general class of problems called Krylov subspace
+problems. And it is \emph{fast} if the matrix falls into this
+Laplacian class of matrices (certain properties). In that case, as opposed to a standard matrix inverse, $O(n^3)$ or
+a sparse one, $O(n^2)$, it will actually be more like $O(n \ln n)$.
+
+It turns out to be important to have a preconditioner. Solving $Ax=b$ is the same as solving $P^{-1}Ax=P^{-1}b$
+where $P$ is a ``preconditioner.'' The closer $A$ is to $P$ (while $P$ is still easy to invert), the closer $P^{-1}A$ 
+is to the identity, making the problem trivial. The current state of the art is the \emph{algebraic multigrid}
+which is that $O(n \ln n)$ type solution.
+
+\vspace{5ex} 
+
+Notation for the rest of the notes:
+\begin{align*}
+C_\lambda\hat{x}&=y\\
+\hat{x}&=C_\lambda^{-1}y
+\end{align*}
+so $\hat{x}$ is the smoothed/predicted $y$.
+
+The question now is how to choose $\lambda$, potentially using $C_p$ or AIC/BIC, cross-validation, etc.
+
+The leave-one-out lemma (from \cite{trevor2001elements})
+allows us to calculate the LOOCV error. Assume $\hat{y}=Sy$
+where $y,\hat{y}\in \mathbb{R}^n$ and $S$ is a smoothing matrix (so the linear case we care about).
+
+We need the degrees of freedom of an estimator/model (basically number of free parameters).
+\begin{align*}
+y&=X\beta + \epsilon\\
+\hat{y}&=X\hat{\beta}
+\end{align*}
+has $p$ degrees of freedom if $\beta\in\mathbb{R}^p$. We need to modify the definition to handle other cases.
+
+Situations we need to address at a minimum:
+\begin{enumerate}[1.]
+\item Fit to $p$ variables (as an example, OLS)
+\item Choose $p$ from $D>p$ candidate variables, then find the best fit for these $p$. This should have more degrees
+of freedom if our definition is supposed to make sense at all.
+\end{enumerate}
+
+Suppose we have $\hat{y}$ such that $\hat{y}_i=g_i(y)$. Then
+\begin{align*}
+\textrm{df}(\hat{y}) &= \frac{1}{\sigma^2} \sum_{i=1}^n \textrm{cov}(\hat{y}_i, y_i)\\
+\sigma^2&=\textrm{var}(y_i)
+\end{align*}
+
+Case: extreme overfitting: $\hat{y}_i=y_i$. Then
+\begin{align*}
+\textrm{df}(\hat{y}) = \frac{1}{\sigma^2}\sum_{i=1}^n \textrm{var}(y_i)=n
+\end{align*}
+
+Case: extreme underfitting: $\hat{y}_i=\obar{y}$ Then
+\begin{align*}
+\textrm{df}(\hat{y}) &= \frac{1}{\sigma^2}\sum_{i=1}^n \textrm{cov}(\obar{y}, y_i)\\
+\textrm{cov}(\obar{y}, y_i)  &=  \textrm{cov}\left( \frac{1}{N}y_i + \frac{1}{N}\sum_{j\neq i}y_j, y_i \right)\\
+&=\textrm{cov}\left(\frac{1}{N} y_i, y_i\right)=\frac{1}{N}\sigma^2\\
+\textrm{df}(\hat{y})&=\frac{1}{\sigma^2}\sum_{i=1}^n \frac{1}{N}\sigma^2 = 1
+\end{align*}
+
+Case: linear smoothers: $\hat{y}=Sy$ then $\textrm{df}(\hat{y}) = \textrm{trace}(S)$.
+
+
 \section{Graph fused lasso}
+Switching to an ADMM framework, we have
+\begin{align*}
+\op{minimize}{x\in \mathbb{R}^n}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1\\
+\textrm{subject to}~& Dx-r=0
+\end{align*}
+
+
 
 \bibliographystyle{plainnat}
 \bibliography{../references}

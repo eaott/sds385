@@ -39,15 +39,15 @@ lu.solve = function(A, b, useCache = TRUE) {
   # L y = P b
   # U z = y
   # x = Q' z
-  lu.C = expand(lu(C))
+  lu.A = expand(lu(A))
   # Leverages a) sparse matrix functionality and b) L x = b solution
   # where L is lower-triangular
-  y = Matrix::solve(lu.C$L, lu.C$P %*% c(fmri), system = "L")
+  y = Matrix::solve(lu.A$L, lu.A$P %*% b, system = "L")
   # Leverages a) sparse matrix functionality and b) L' x = b solution
   # where L' is upper-triangular
-  z = Matrix::solve(lu.C$U, y, system = "Lt")
+  z = Matrix::solve(lu.A$U, y, system = "Lt")
 
-  x = t(lu.C$Q) %*% z
+  x = t(lu.A$Q) %*% z
   return(x)
 }
 
