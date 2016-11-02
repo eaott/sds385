@@ -1,5 +1,6 @@
 library(Matrix)
 library(microbenchmark)
+library(RColorBrewer)
 source("laplacian_methods.R")
 fmri = read.csv("fmri_z.csv")
 colnames(fmri) = NULL
@@ -12,21 +13,25 @@ L = t(D) %*% D
 lambda = 2
 C = Diagonal(128 ** 2) + lambda * L
 n.iter = 200
-x = lu.solve(C, c(fmri))
-gs.x = gaussseidel.solve(C, c(fmri), n.iter = n.iter)
-jac.x = jacobi.solve(C, c(fmri), n.iter = n.iter)
+x = lu.solve(C, c.fmri)
+gs.x = gaussseidel.solve(C, c.fmri, n.iter = n.iter)
+jac.x = jacobi.solve(C, c.fmri, n.iter = n.iter)
 # Plot
 xMat = matrix(x, nrow = 128)
 gsxMat = matrix(gs.x, nrow=128)
 jacxMat = matrix(jac.x, nrow=128)
 
 par(mfrow = c(2, 2))
-cols = gray((0:50 / 50) ^ 0.67)
+# cols = gray((0:50 / 50) ^ 0.67)
+cols = colorspace::diverge_hcl(20)
 image(fmri, col = cols, main = "raw")
 image(xMat, col = cols, main = "lu")
 image(gsxMat, col = cols, main = "gs")
 image(jacxMat, col = cols, main = "jac")
 
+########################################
+# FIXME: Use the sparse matrix image function instead.
+########################################
 
 
 # HOBBITSES ARE TRICKSEY

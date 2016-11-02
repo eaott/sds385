@@ -22,7 +22,7 @@ lu.solve = function(A, b, useCache = TRUE) {
   # and re-use them, which makes benchmarking a little unfair. This forces
   # the decomposition to happen every time.
   if (!useCache) {
-    C@factors = list()
+    A@factors = list()
   }
   # sparseLU (see ?lu):
   # decomposition: A = P' L U Q

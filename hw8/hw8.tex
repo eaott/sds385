@@ -131,7 +131,7 @@ p_k &= -r_k + \beta_k p_{k-1}\\
 
 
 
-\subsection{Notes from class}
+\subsection{Notes from class 10/31}
 Next week: graph fused lasso.
 
 Conjugate gradient is a lot more complicated, and is in fact solving a more general class of problems called Krylov subspace
@@ -143,6 +143,7 @@ It turns out to be important to have a preconditioner. Solving $Ax=b$ is the sam
 where $P$ is a ``preconditioner.'' The closer $A$ is to $P$ (while $P$ is still easy to invert), the closer $P^{-1}A$ 
 is to the identity, making the problem trivial. The current state of the art is the \emph{algebraic multigrid}
 which is that $O(n \ln n)$ type solution.
+
 
 \vspace{5ex} 
 
@@ -194,13 +195,166 @@ Case: extreme underfitting: $\hat{y}_i=\obar{y}$ Then
 
 Case: linear smoothers: $\hat{y}=Sy$ then $\textrm{df}(\hat{y}) = \textrm{trace}(S)$.
 
+\subsection{Picking up notes from last class}
+Laplacian smoothing should have degrees of freedom between these two extremes.
+For linear smoothers, $\hat{y}=Sy$ where $y,\hat{y}\in\mathbb{R}^n$. Then (where $S_i$ is the $i$-th row of $S$):
+\begin{align*}
+\hat{y}_i&=\langle S_i, y \rangle\\
+\textrm{cov}(\hat{y}_i, y_i)&=\textrm{cov}\left( \sum_{j=1}^n S_{ij}y_j, y_i  \right)\\
+&=\textrm{cov}\left( S_{ii}y_i + \sum_{j\neq i} S_{ij}y_j, y_i  \right)\\
+&=\textrm{cov}\left( S_{ii}y_i, y_i  \right)\\
+&=S_{ii}\textrm{cov}(y_i, y_i)=S_{ii} \sigma^2\\
+\textrm{df}(\hat{y})&=\frac{1}{\sigma^2}\sum_{i=1}^n S_{ii}\sigma^2 =\textrm{trace}(S)
+\end{align*}
 
-\section{Graph fused lasso}
-Switching to an ADMM framework, we have
+Case: linear least squares: $\hat{y}=X\beta+\epsilon$, where $\hat{\beta}=(X^\top X)^{-1}X^\top y$.
+
+In linear regression, we would expect this to have $p$ degrees of freedom. This is a linear smoother itself, as
+$$\hat{y}=X\hat{\beta}=X(X^\top X)^{-1}X^\top y$$
+So $\textrm{df}(\hat{y})=\textrm{trace}(X(X^\top X)^{-1}X^\top)$. This is a
+projection matrix, so the trace is the rank, and the rank is the dimension of the
+underlying subspace, and this is $p$. Or, we can use the properties of trace.
+
+\begin{align*}
+\textrm{trace}(ABC)&=\textrm{trace}(CAB)\\
+\textrm{trace}(X(X^\top X)^{-1}X^\top)&=\textrm{trace}(X^\top X(X^\top X)^{-1})\\
+&=\textrm{trace}(I_p)=p
+\end{align*}
+
+It would be nice to be able to calculate the degrees of freedom of the lasso, but
+this result is hard to use in practice. Instead, we can use Stein's lemma.
+This shows that for a pretty general class of estimators, we can instead
+use an alternate formula to compute the degrees of freedom and it is equivalent
+to the formula above. See \cite{zou2007degrees} to see where this lemma
+is used to find the degrees of freedom of lasso.
+
+The more philosophical question is how the degrees of freedom of linear
+regression and lasso are both $p$ (where $p$ for the lasso are the non-zero coefficients). More-or-less, this is because lasso also shrinks the variables
+it estimates. So the extra variables in lasso that can be selected cause an 
+increase in degrees of freedom that is exactly
+canceled because of shrinkage.
+
+Why do we even need the degrees of freedom? For example, it's for model
+selection using $C_p$ or AIC/BIC, etc.
+
+\subsubsection{Graph-fused lasso}
+The degrees of freedom in this problem is the number of distinct constant
+regions in the fitted $\hat{x}$.
+
+In terms of actually solving the problem, we have
 \begin{align*}
 \op{minimize}{x\in \mathbb{R}^n}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1\\
 \textrm{subject to}~& Dx-r=0
 \end{align*}
+Doing the normal ADMM will be fine, but you'll need to refactor a matrix
+every time. In the advanced version, we start from this same constrained
+optimization problem but move the constraint back into the objective.
+
+\begin{align*}
+\op{minimize}{x\in \mathbb{R}^n}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1+I_C(x,r)\\
+I_C(x,r)&=\left\{
+\begin{matrix}
+\infty & Dx\neq r\\
+0 & \textrm{o.w.}
+\end{matrix}
+\right.
+\end{align*}
+So now, we'll extend this to have have a slack variable for $x$ and one for $r$.
+\begin{align*}
+\op{minimize}{x\in \mathbb{R}^n}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1+I_C(z,s)\\
+\textrm{subject to}~& x-z=0 \wedge r-s=0
+\end{align*}
+
+However, it turns out that the $x$ update is the most computationally expensive
+part. In the original ADMM, the $x$ update is generically $A^{(t)}x=b^{(t)}$
+but in this final form, it is $Ax=b^{(b)}$ so we can re-use the same
+matrix decomposition for the $x$ update. At this point, all the updates
+will be a lot more cheap, including the $x$ update, so everything will be considerably faster.
+
+
+
+\section{Graph fused lasso}
+Switching to an ADMM framework, we have
+\begin{align*}
+\op{minimize}{~}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1\\
+\textrm{subject to}~& Dx-r=0
+\end{align*}
+
+However, in this case, we can re-write the ADMM using additional slack
+variables as noted in the notes in the previous section. For additional
+information, see \S5 in \cite{tansey2014false}. So now, use the following:
+\begin{align*}
+\op{minimize}{~}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1+I_C(z,s)\\
+\textrm{subject to}~& x-z=0 \wedge r-s=0
+\end{align*}
+to which we introduce scaled slack variables $u$ for $x-z=0$ and $t$ for $r-s=0$:
+
+\begin{align*}
+\op{minimize}{~}&  \frac{1}{2}\norm{y-x}_2^2 + \lambda \norm{r}_1+I_C(z,s) + \frac{a}{2}\norm{x-z+u}_2^2+\frac{a}{2}\norm{r-s+t}_2^2
+\end{align*}
+
+\subsection{$x$ update}
+The augmented Lagrangian is separable in $x_i$ so for each $x_i$ we have:
+\begin{align*}
+\op{minimize}{x_i\in\mathbb{R}}&  \frac{1}{2}(y_i-x_i)^2 + \frac{a}{2}(x_i-z_i+u_i)^2\\
+0&=x_i-y_i + a(x_i-z_i+u_i)\\
+\hat{x}_i&=\frac{1}{1+a}\left(y_i+az_i-au_i\right)
+\end{align*}
+Or as a vector,
+$$\hat{x}=\frac{1}{1+a}\left(y+az-au\right)$$
+
+\subsection{$r$ update}
+The augmented Lagrangian is also separable in $r_i$ so we have:
+\begin{align*}
+\op{minimize}{r_i\in\mathbb{R}}&   \lambda |r_i| +\frac{a}{2}\left(r_i-s_i+t_i\right)^2
+\end{align*}
+As shown many times before, the solution is simply the soft-thresholding function:
+$$\hat{r}_i=S_{\lambda/a}\left(s_i-t_i\right)$$
+
+\subsection{$z, s$ updates}
+Because of the indicator function, $z$ and $s$ must be considered jointly (indeed, as vectors, not as elements because the constraint can't in general
+be checked without all values).
+
+\begin{align*}
+\op{minimize}{z\in\mathbb{R}^n,~ s\in\mathbb{R}^m}& I_C(z,s) + \frac{a}{2}\norm{x-z+u}_2^2+\frac{a}{2}\norm{r-s+t}_2^2
+\end{align*}
+We again play tricks and move the indicator part of the objective back to a constraint to remove $s$ from the objective.
+\begin{align*}
+\op{minimize}{z\in\mathbb{R}^n}& \frac{a}{2}\norm{x-z+u}_2^2+\frac{a}{2}\norm{r-Dz+t}_2^2\\
+\textrm{subject to}~& Dz-s=0
+\end{align*}
+First, simplify notation such that $w=x+u$ and $v=r+t$.
+The objective can now be re-written as:
+$$\frac{a}{2}\left[z^\top z - 2w^\top z + w^\top w + z^\top D^\top D z
+-2v^\top D z + v^\top v\right]$$
+which is simply a quadratic form in $z$, so
+\begin{align*}
+0&=\frac{a}{2}\left[ 2z -2w + 2D^\top D z - 2D^\top v \right]\\
+0&=(I+D^\top D)z - w - D^\top v\\
+\hat{z}&=(I+D^\top D)^{-1}(w+D^\top v)=(I+D^\top D)^{-1}\left(x+u+D^\top[r+t]\right)
+\end{align*}
+Then set $\hat{s}=D\hat{z}$.
+
+\subsection{$u, t$ updates}
+Finally, the scaled slack variables are updated as:
+\begin{align*}
+\hat{u}&=x-z+u\\
+\hat{t}&=r-s+t
+\end{align*}
+
+\subsection{All updates together}
+Placing everything together, we have:
+\begin{align*}
+x^{(k+1)}&=\frac{1}{1+a}\left(y+az^{(k)}-au^{(k)}\right)\\
+r_i^{(k+1)}&=S_{\lambda/a}\left(s_i^{(k)}-t_i^{(k)}\right)~~~i\in\{1,\ldots, m\}\\
+z^{(k+1)}&=(I+D^\top D)^{-1}\left(x^{(k+1)}+u^{(k)}+D^\top[r^{(k+1)}+t^{(k)}]\right)\\
+s^{(k+1)}&=Dz^{(k+1)}\\
+u^{(k+1)}&=x^{(k+1)}-z^{(k+1)}+u^{(k)}\\
+t^{(k+1)}&=r^{(k+1)}-s^{(k+1)}+t^{(k)}
+\end{align*}
+
+\subsection{Convergence FIXME FIXME FIXME}
+
 
 
 
