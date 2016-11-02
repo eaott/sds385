@@ -1,3 +1,4 @@
+library(colorspace)
 library(Matrix)
 library(microbenchmark)
 source("laplacian_methods.R")
@@ -12,21 +13,29 @@ D = makeD2_sparse(nrow(fmri), ncol(fmri))
 L = t(D) %*% D
 
 lambda = 2
-C = Diagonal(128 ** 2) + lambda * L
-n.iter = 200
+C = Diagonal(nrow(fmri) * ncol(fmri)) + lambda * L
+n.iter = 600
 # Direct solver for comparison
 x = lu.solve(C, c.fmri)
-admm.x = graphfusedlasso.solve(D, c.fmri, lambda = 2, n.iter = 100)
+gs.x = gaussseidel.solve(C, c.fmri, n.iter = n.iter)
+admm = graphfusedlasso.solve(D, c.fmri, lambda = lambda,
+                               n.iter = n.iter,
+                               tol.abs = 1e-8,
+                               tol.rel = 1e-5)
 
 xMat = matrix(x, nrow = 128)
-admmxMat = matrix(admm.x, nrow = 128)
+gsxMat = matrix(gs.x, nrow = 128)
+admmxMat = matrix(admm$x, nrow = 128)
 
 
 par(mfrow = c(2, 2))
 # cols = gray((0:50 / 50) ^ 0.67)
-cols = colorspace::diverge_hcl(20)
+cols = diverge_hcl(40)
 image(fmri, col = cols, main = "raw")
 image(xMat, col = cols, main = "lu")
+image(gsxMat, col = cols, main = "gauss")
 image(admmxMat, col = cols, main = "admm")
-sum(abs(admm.x) < 1e-15)
 
+c(length(levels(factor(admm$r[ , 1]))), length(admm$r))
+sum(abs(D %*% admm$x - admm$r) ^ 2)
+admm$n
