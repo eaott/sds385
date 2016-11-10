@@ -353,13 +353,71 @@ u^{(k+1)}&=x^{(k+1)}-z^{(k+1)}+u^{(k)}\\
 t^{(k+1)}&=r^{(k+1)}-s^{(k+1)}+t^{(k)}
 \end{align*}
 
-\subsection{Convergence FIXME FIXME FIXME}
+\subsection{Convergence}
+I used the convergence criteria spelled out in \cite{boyd2011distributed} \S3.3.1 with $\epsilon^{\textrm{abs}}=10^{-8}$ and $\epsilon^{\textrm{rel}}=10^{-5}$
+
+\subsection{Notes from class 11/7}
+Problem: James originally said that the original ADMM version would require re-factorizing the matrix for the $x$
+update, but that ends up only being the case if you have a weighted form $\frac{1}{2}\norm{W^{1/2}(y-x)}_2^2$ where $W$ may depend on the iteration number (such as being a function of $x$). In this case, that matrix is just the
+just the identity, so it's fine.
+
+To do cross validation, basically, just throw out things in the L2 norm term, but keep them in the L1 term. Preserves smoothing.
+
+Can re-write the objective as
+\begin{align*}
+\op{minimize}{x\in\mathbb{R}^n} &\frac{1}{2}\norm{y-x}_2^2+\lambda \sum_{(i,j)\in E} |x_i-x_j|\\
+\op{minimize}{x\in\mathbb{R}^n} &\frac{1}{2}\norm{y-x}_2^2+\lambda \sum_{(i,j)\in R} |x_i-x_j|+\lambda \sum_{(i,j)\in C} |x_i-x_j|\\
+R\cup C &= E, ~~\textrm{R is edges along rows, C is edges along cols}
+\end{align*}
+We then split along the edges in row 1, row 2, up to row D. Pretend we didn't have the column terms just for a moment.
+We could solve each row in parallel then. There's an algorithm for doing this chain graph-fused lasso that's similar
+to hidden Markov model Kalman filtering algorithms and it runs in linear time.
+
+So, we just use a new variable, $z$ for the column terms and add the constraint $z=x$. So, we just do ADMM.
+This is proximal stacking as in \cite{barbero2014modular}. James has code on the class repo to show how to use it.
+
+
+
+
+
+\subsection{Notes from class 11/9}
+``Data-analysis applications of the fused lasso and related spatial smoothers'' presentation.
+
+Recurring problem: $\op{minimize}{\beta} l(\beta)+\lambda \norm{D\beta}_1$.
+
+Toy example of chain graph fused lasso shows that coefficients get pulled toward the mean, may have a lot more levels than the underlying truth. In a way, it's shrinking the estimate of the \emph{jumps} between segments.
+
+\subsubsection{Trend filtering}
+
+$$\op{minimize}{\beta \in \mathbb{R}^N} \frac12 \norm{y-\beta}_2^2+\lambda \norm{D^{(k+1)}\beta}_1$$
+
+So $D^{(k+1)}$ is a discrete analog of the order-$k$ derivative. Each one is like the ``differences of the differences (of the differences $\ldots$).'' You plug in the order of the derivative that you care about, so you're imposing a form on $\beta$. $k=0$ is piecewise constants. $k=1$ is piecewise linear. And so forth. There's a little subtlety because you lose a row each time you increase $k$.
+
+This is different than splines. Splines are piecewise polynomial functions such that you get derivatives
+at all of the breakpoints up to the order of the polynomial minus 1. Why is this different than regression splines?
+In regression splines, you pick the breakpoints then fit by least squares. In the graph-fused lasso, you can change
+the regression at \emph{any} data point, rather than selecting the breakpoints ahead of time. You also select the breakpoints jointly. You also need basis splines such as $b$-splines. In this problem, you get a falling-factorial basis which is related but not the same basis.
+
+There's a fast way of solving the trend filtering, see \cite{ramdas2015fast}. See also \texttt{glmgen} on GitHub
+for implementation of this.
+
+Can generalize to a general graph instead of a chain. See \cite{wang2015trend} for how to generate the $D$ matrix
+in the general case.
+
+\subsubsection{Spatially aware anomaly detection}
+This I think is partially Alex Reinhart's work with the radiation detector. In the presence of an anomaly, not only
+is the background rate going to change, but the energy spectrum is going to change. One simple thing
+to do to test is comparing the background (known) and the new empirical distribution with a Kolmogorov-Smirnoff 
+difference of distribution test. 
+
+Recursive dyadic partitions. Instead of taking just bins, split the space in half and count each side. Recursively split.
+Now, we try to smooth the values in each split across space. This is embarassingly parallel to solve.
 
 
 
 
 \bibliographystyle{plainnat}
-\bibliography{../references}
+\bibliography{/Users/Evan/GitProjects/tex-docs/references}
 
 
 \end{document}
