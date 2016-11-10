@@ -16,14 +16,14 @@ D = makeD2_sparse(1, N)
 
 L = t(D) %*% D
 
-lambda = 10
+lambda = 3
 C = Diagonal(nrow(data) * ncol(data)) + lambda * L
 n.iter = 200
 
 
 # Direct solver for comparison
 lu.x = lu.solve(C, c(data))
-admm.x = graphfusedlasso.solve(D, c(data), lambda = lambda, n.iter = 1000,
+admm.x = graphfusedlasso.solve(D, c(data), lambda = lambda, n.iter = n.iter,
                                tol.abs = 1e-3, tol.rel = 1e-8)
 
 plot_data = data.frame(
