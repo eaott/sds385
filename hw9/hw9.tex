@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+
+\usepackage[authoryear,round]{natbib}
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+\newcommand{\op}[2]{{\ensuremath{\underset{ #2 }{\operatorname{ #1 }}~}}}
+\newcommand{\norm}[1]{{ \ensuremath{ \left\lVert  #1 \right\rVert  }  }}
+\newcommand{\cov}{ \ensuremath{ \textrm{cov} } }
+\newcommand{\var}{ \ensuremath{ \textrm{var} } }
+\newcommand{\tr}{ \ensuremath{ \textrm{trace} } }
+\newcommand{\df}{ \ensuremath{ \textrm{df} } }
+\newcommand{\R}{ \ensuremath{ \mathbb{R} }}
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}HW 9\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+%\date{DATE}
+\setcounter{secnumdepth}{0}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+
+\section{Notes from class 11/14}
+\subsection{PCA}
+Idea from PCA is to summarize most of the information in a smaller number of covariates. To do this,
+you maximize the variance along the principal axis. This turns out to be basically just an eigenvalue problem,
+with the most important axis being the one with the largest eigenvalue, etc. Because of this, scaling of variables
+is critical. What's even nicer is that we can find these from:
+\begin{align*}
+\cov &= X^\top X / (n-1) = V L V^\top\\
+X&=USV^\top\\
+\cov &= V \frac{S^2}{n-1} V^\top
+\end{align*}
+For more on PCA, see \cite{james2013introduction}
+
+
+\subsection{PMD}
+In PCA, $V$ is not guaranteed at all to be sparse. 
+That's where the new paper comes in, see \cite{witten2009penalized}.
+Now, we'll construct $r$ factors by
+\begin{align*}
+\op{argmin}{\hat{X}\in M(r)}\norm{X-\hat{X}}_F^2 = \sum_{k=1}^r d_k u_k v_k^\top
+\end{align*}
+where $\norm{\cdots}_F^2$ is the Frobenius norm, the sum of the squares of all matrix elements.
+
+Now, we will set out to solve
+\begin{align*}
+\op{minimize}{d,u,v} &\frac12 \norm{X-duv^\top}_F^2\\
+\textrm{subject to} ~&\norm{u}_2^2=1~~~~\norm{v}_2^2=1\\
+&\norm{u}_1\leq c_1~~~~\norm{v}_1\leq c_2
+\end{align*}
+The trick is that we end up being able to solve for $d$ trivially so that we really only alternate between solving for $u$ and $v$ until convergence.
+
+A small note: if we dropped the $\mathcal{L}_1$ constraint, then update solution for $u$ would be $\frac{Xv}{\norm{Xv}_2}$ because we just want to maximize $u^\top Xv$ (go in same direction, see Theorem 2.1 in the paper), but have unit length (scale by $\mathcal{L}_2$ norm).
+
+When we then include the $\mathcal{L}_1$ constraint, that's where we get the soft-thresholding piece.
+
+Another small note: generating a rank-$k$ approximation will not be guaranteed to reproduce the original rank-$k$ $X$ matrix because this approximation is \emph{sparse}.
+
+\bibliographystyle{plainnat}
+\bibliography{/Users/Evan/GitProjects/tex-docs/references}
+
+\end{document}

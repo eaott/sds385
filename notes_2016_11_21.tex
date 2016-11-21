@@ -1,0 +1,196 @@
+\documentclass{article}
+\usepackage[top=.5in, bottom=.5in, left=.9in, right=.9in]{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{bbm}
+%\usepackage[authoryear,round]{natbib}
+\usepackage[backend=bibtex,citestyle=authoryear-comp,natbib=true,sorting=none,hyperref=true,maxnames=2,arxiv=pdf]{biblatex}
+\renewbibmacro{in:}{}
+\addbibresource{/Users/Evan/GitProjects/tex-docs/references.bib}
+
+
+\newcommand{\obar}[1]{\ensuremath{\overline{ #1 }}}
+\newcommand{\iid}{\ensuremath{\stackrel{\textrm{iid}}{\sim}}}
+\newcommand{\op}[2]{{\ensuremath{\underset{ #2 }{\operatorname{ #1 }}~}}}
+\newcommand{\norm}[1]{{ \ensuremath{ \left\lVert  #1 \right\rVert  }  }}
+\newcommand{\cov}{ \ensuremath{ \textrm{cov} } }
+\newcommand{\var}{ \ensuremath{ \textrm{var} } }
+\newcommand{\tr}{ \ensuremath{ \textrm{trace} } }
+\newcommand{\df}{ \ensuremath{ \textrm{df} } }
+\newcommand{\R}{ \ensuremath{ \mathbb{R} }}
+\newcommand{\indicator}[1]{ \ensuremath{ \mathbbm{1}\left\{ #1 \right\} }   }
+
+\usepackage{xcolor}
+\definecolor{darkgreen}{rgb}{0,0.25,0}
+\newcommand{\soln}{{\color{red}\textbf{Solution:~}\color{black}}}
+
+
+\usepackage[formats]{listings}
+\lstdefineformat{R}{~={\( \sim \)}}
+\lstset{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\bfseries\rmfamily,
+keepspaces=true,
+% underlined bold black keywords
+commentstyle=\color{darkgreen}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt, %
+frame=shadowbox,
+rulesepcolor=\color{black},
+,columns=fullflexible,format=R
+} %
+\renewcommand{\ttdefault}{cmtt}
+% enumerate is numbered \begin{enumerate}[(I)] is cap roman in parens
+% itemize is bulleted \begin{itemize}
+% subfigures:
+% \begin{subfigure}[b]{0.5\textwidth} \includegraphics{asdf.jpg} \caption{} \label{subfig:asdf} \end{subfigure}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue}
+
+
+\graphicspath{ {C:/Users/Evan/Desktop/} }
+\title{\vspace{-6ex}Lecture\vspace{-2ex}}
+\author{Evan Ott \\ UT EID: eao466\vspace{-2ex}}
+\date{November 21, 2016}
+\setcounter{secnumdepth}{0}
+\usepackage[parfill]{parskip}
+
+
+
+\begin{document}
+\maketitle
+
+Note: I was 10 minutes late, so catching up.
+
+\section{Notation}
+
+\begin{center}
+\begin{tabular}{cc|c|c|c}
+& & \multicolumn{2}{c|}{Decision} & \\ 
+\multirow{ 3}{*}{Truth}  & & $\hat{H}_i=0$ & $\hat{H}_i=1$ & Total \\
+\hline
+ & $H_i=0$ & TN & FP & $T_0$\\
+ & $H_i=1$ & FN & TP & $T_1$\\
+ \hline
+ & Total & N & P & M
+\end{tabular}
+\end{center}
+
+\vspace{3ex}
+
+\begin{description}
+\item[Sensitivity] is the same as ``Recall,'' ``Probability of Detection,'' and is equal to $TP/T_1$
+\item[Specificity] is the same as ``True negative rate'' and is equal to $TN/T_0$
+\item[Precision] is the same as ``Positive predictive value'' and is equal to $TP/(TP+FP)=TP/P$
+\item[False Positive Rate] is $F/T_0$
+\item[False Discovery Rate (FDR)] is $FP/(FP+TP)=FP/P$
+\end{description}
+
+Mostly, people are looking more at the false discovery rate because it has nice properties when you control it.
+
+\section{Benjamini-Hochberg}
+See \citep{benjamini1995controlling}.
+
+Say we have $M$ $p$-values for $M$ tests $P_1, \ldots, P_M$. Sort them so that
+\begin{align*}
+P_{(0)}&=0\\
+P_{(0)} \leq P_{(1)} \leq P_{(2)} \leq \cdots \leq P_{(M)} 
+\end{align*}
+The testing procedure is a map from $[0,1]^M \rightarrow [0,1]$ to create the cutoff point.
+
+If we found that our $p$-values were all more-or-less uniformly distributed between 0 and 1, we probably don't
+have any real signals, so we'd need a really tight threshold (close to 0). However, if we have more $p$-values close
+to 0, then we'd want a stronger threshold.
+
+So the threshold is
+$$T_{BH}=\max \left\{ P_{(i)} : P_{(i)}\leq \alpha \frac{i}{M}\right\}$$
+where $\alpha$ is the target FDR
+
+
+If we were to look at Bonferroni threshold instead, that would be $T_{\textrm{Bonf}}=\frac{\alpha}{M}$. It's a bit
+of an interesting coincidence that the value of the Bonferroni threshold is equal to the slope of the Benjamini-
+Hochberg.
+
+The conclusion of the Benjamini-Hochberg test is that $\hat{H}_i=1$ for all $P_i \leq T_{BH}$ and $\hat{H}_i=0$ 
+otherwise. On average, then, we control the FDR to be, on average $\alpha$.
+
+Now, this procedure is the ``ordinary least squares'' of multiple testing, in that it is the standard applied pretty
+much everywhere.
+
+Let's look at the ``False discovery proportion,'' (FDP):
+
+\begin{align*}
+FDP(t) &= \frac{
+\sum_{i=1}^M \indicator{P_i\leq t}\left( 1-H_i \right)}{
+\sum_{i=1}^M \indicator{P_i\leq t } + \indicator{  \textrm{all~} P_i > t}
+}\\
+FDR(t)&= \mathbb{E}\left[FDP(t)\right]
+\end{align*}
+where the expectation is taken under the true data-generating process.
+
+Let's say
+\begin{align*}
+H_1,\ldots,H_M \sim& \textrm{Bernoulli}(a)\\
+(P_i | H_i=0) \sim& \textrm{Uniform}(0,1)\\
+(P_i | H_i=1) \sim& F\\
+\end{align*}
+where $F$ is some arbitrary CDF on $[0,1]$ stocastically smaller than U$(0,1)$. Marginally, the $p$-values follow
+$$P_i\sim G,~~~~~G=aF + (1-a)\textrm{U}(0,1)$$
+
+Let's create the empirical CDF of the $p$-values as $\hat{G}$.
+
+$$\hat{G}(t)=\frac{1}{M}\sum_{i=1}^M\indicator{P_i\leq t}$$
+
+Assuming no ties, this is $$\hat{G}(P_{(i)})=\frac{i}{M}$$
+
+If instead of taking the actual expectation in order to calculate the FDR, we took the separate expectations of the numerator and denominator, we have
+\begin{align*}
+FDR(t)&= \mathbb{E}\left[FDP(t)\right]\\
+&\approx \frac{
+\mathbb{E}\left[\sum_{i=1}^M \indicator{P_i\leq t}\left( 1-H_i \right)\right]}{
+\mathbb{E}\left[\sum_{i=1}^M \indicator{P_i\leq t } + \indicator{  \textrm{all~} P_i > t}\right]
+}\\
+&= \frac{
+\mathbb{E}\left[\sum_{i=1}^M \frac{1}{M}\indicator{P_i\leq t}\left( 1-H_i \right)\right]}{
+\mathbb{E}\left[\sum_{i=1}^M \frac{1}{M}\indicator{P_i\leq t } + \frac{1}{M}\indicator{  \textrm{all~} P_i > t}\right]
+}\\
+&= \frac{(1-a)t}{G(t)+\frac{1}{M}\left(1-G(t)\right)^M} \approx \frac{(1-a)t}{G(t)}
+\end{align*}
+(the expectation of the empirical CDF is the CDF)
+
+Okay, let's tie things together. Benjamini-Hochberg says: $\hat{FDR}(t)$ from $FDR(t)=\frac{(1-a)t}{G(t)}$ with
+\begin{enumerate}[(1)]
+\item $a=0$ (conservative choice)
+\item $G(t)=\hat{G}(t)$
+\end{enumerate}
+
+So $\alpha=\hat{FDR}(t)=\frac{t}{\hat{G}(t)}$. If we knew $a$ inherently, we could do better than Benjamini-Hochberg 
+because we wouldn't have to be as conservative. We could also regularize / smooth the empirical CDF to have a
+better estimate. Doing either of these moves you closer to a Bayesian / empirical Bayesian method.
+
+\section{Bayes Two-Groups Model}
+In this case, don't use $p$-values, just use the test statistic.
+\begin{align*}
+Z_i | \mu_i \sim~& N(\mu_i, \sigma^2)~~~{\small \textrm{(problem dependent)}}\\
+\mu_i \sim~&\omega\cdot F + (1-\omega)\delta_0
+\end{align*}
+In the data for class, $F=N(0,\tau^2)$.
+
+Can write down the MLE given $\tau^2$ and $\omega$, and optimize it, even just numerically. James' code in R
+will do just that. Finally, just compute the posterior probabilities given those values for all the data points, and can
+engineer it to be very close to having the same idea as the FDR.
+
+
+\printbibliography
+\end{document}
